@@ -13,11 +13,11 @@ export type Database = {
         Row: {
           checksum: string
           created_at: string
-          developer: string | null
+          developer: string
           genres: Json[]
           id: number
           name: string
-          publisher: string | null
+          publisher: string
           release_year: number
           unsure_developer: boolean
           unsure_publisher: boolean
@@ -25,11 +25,11 @@ export type Database = {
         Insert: {
           checksum: string
           created_at?: string
-          developer?: string | null
+          developer: string
           genres?: Json[]
           id: number
           name: string
-          publisher?: string | null
+          publisher: string
           release_year: number
           unsure_developer?: boolean
           unsure_publisher?: boolean
@@ -37,11 +37,11 @@ export type Database = {
         Update: {
           checksum?: string
           created_at?: string
-          developer?: string | null
+          developer?: string
           genres?: Json[]
           id?: number
           name?: string
-          publisher?: string | null
+          publisher?: string
           release_year?: number
           unsure_developer?: boolean
           unsure_publisher?: boolean

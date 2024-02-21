@@ -4,6 +4,8 @@ import { createContext, useEffect, useState } from 'react'
 import supabase from "@/lib/supabase-browser"
 import { PostgrestError } from '@supabase/supabase-js'
 
+console.log("Context should load")
+
 export type TContext = {
   // userLoading: boolean
   // user?: User
@@ -100,6 +102,10 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
     getCompanies()
     getGenres()
   }, [])
+
+  if (games) console.log('games loaded')
+  if (companies) console.log('companies loaded')
+  if (genres) console.log('genres loaded')
 
   return (
     <Context.Provider
