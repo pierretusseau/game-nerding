@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
 import Hint from '@/components/Atoms/Hint'
 import { getRandomEntries } from '@/Utils/Utils'
+import Debug from '../Debug/Debug'
 
 type GameGenre = any
 
@@ -15,6 +16,7 @@ function GuessBlock() {
       const selectedGame = gamesArray[Math.floor(Math.random() * gamesArray.length)]
       setRandomGame(selectedGame)
       setRandomGenres(getRandomEntries(selectedGame.genres, 3))
+      console.log("answer is", selectedGame)
     }
   }
 
@@ -26,9 +28,9 @@ function GuessBlock() {
   return (
     <>
       {/* Refresh button */}
-      {process.env.NEXT_PUBLIC_DEBUG && (
+      <Debug condition={process.env.NEXT_PUBLIC_DEBUG} option={randomGame}>
         <button className={`btn btn-default`} onClick={() => selectRandomGame(games)}>Refresh</button>
-      )}
+      </Debug>
 
       {/* Actual Game App Block */}
       <div className={`w-[300px] bg-neutral-900 p-4`}>
@@ -51,9 +53,11 @@ function GuessBlock() {
       </div>
 
       {/* Game name */}
-      {process.env.NEXT_PUBLIC_DEBUG && randomGame && (
-        <div className="mt-auto opacity-0 hover:opacity-100">{randomGame.name}</div>
-      )}
+      <Debug condition={process.env.NEXT_PUBLIC_DEBUG} option={randomGame}>
+        <div className="group/test btn">
+          <div className="opacity-0 group-hover/test:opacity-100 pointer-events-none">{randomGame?.name}</div>
+        </div>
+      </Debug>
     </>
   )
 }
