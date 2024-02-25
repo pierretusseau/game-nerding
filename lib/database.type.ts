@@ -11,57 +11,54 @@ export type Database = {
     Tables: {
       app_games: {
         Row: {
+          category: number | null
           checksum: string
           created_at: string
-          developer: string
+          developer: number | null
+          edited_at: string | null
           genres: Json[]
           id: number
           name: string
-          publisher: string
+          publisher: number | null
+          rating: number | null
+          rating_count: number | null
           release_year: number
           unsure_developer: boolean
           unsure_publisher: boolean
         }
         Insert: {
+          category?: number | null
           checksum: string
           created_at?: string
-          developer: string
+          developer?: number | null
+          edited_at?: string | null
           genres?: Json[]
           id: number
           name: string
-          publisher: string
+          publisher?: number | null
+          rating?: number | null
+          rating_count?: number | null
           release_year: number
           unsure_developer?: boolean
           unsure_publisher?: boolean
         }
         Update: {
+          category?: number | null
           checksum?: string
           created_at?: string
-          developer?: string
+          developer?: number | null
+          edited_at?: string | null
           genres?: Json[]
           id?: number
           name?: string
-          publisher?: string
+          publisher?: number | null
+          rating?: number | null
+          rating_count?: number | null
           release_year?: number
           unsure_developer?: boolean
           unsure_publisher?: boolean
         }
-        Relationships: [
-          {
-            foreignKeyName: "public_app_games_developer_fkey"
-            columns: ["developer"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["checksum"]
-          },
-          {
-            foreignKeyName: "public_app_games_publisher_fkey"
-            columns: ["publisher"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["checksum"]
-          }
-        ]
+        Relationships: []
       }
       companies: {
         Row: {
@@ -70,6 +67,7 @@ export type Database = {
           created_at: string
           description: string
           developed: Json[] | null
+          edited_at: string | null
           id: number
           name: string
           published: Json[] | null
@@ -81,6 +79,7 @@ export type Database = {
           created_at?: string
           description?: string
           developed?: Json[] | null
+          edited_at?: string | null
           id?: number
           name?: string
           published?: Json[] | null
@@ -92,6 +91,7 @@ export type Database = {
           created_at?: string
           description?: string
           developed?: Json[] | null
+          edited_at?: string | null
           id?: number
           name?: string
           published?: Json[] | null
@@ -101,34 +101,37 @@ export type Database = {
       }
       games: {
         Row: {
+          category: number
           checksum: string
           created_at: string
           first_release_date: number
           genres: Json[] | null
-          hypes: number
           id: number
-          involved_companies: Json[]
           name: string
+          rating: number
+          rating_count: number
         }
         Insert: {
+          category: number
           checksum: string
           created_at?: string
           first_release_date?: number
           genres?: Json[] | null
-          hypes?: number
           id?: number
-          involved_companies?: Json[]
           name?: string
+          rating: number
+          rating_count: number
         }
         Update: {
+          category?: number
           checksum?: string
           created_at?: string
           first_release_date?: number
           genres?: Json[] | null
-          hypes?: number
           id?: number
-          involved_companies?: Json[]
           name?: string
+          rating?: number
+          rating_count?: number
         }
         Relationships: []
       }
@@ -136,18 +139,21 @@ export type Database = {
         Row: {
           checksum: string
           created_at: string
+          edited_at: string | null
           id: number
           name: string
         }
         Insert: {
           checksum: string
           created_at?: string
+          edited_at?: string | null
           id?: number
           name?: string
         }
         Update: {
           checksum?: string
           created_at?: string
+          edited_at?: string | null
           id?: number
           name?: string
         }

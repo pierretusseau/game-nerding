@@ -1,10 +1,8 @@
 'use client'
 
 import { createContext, useEffect, useState } from 'react'
-import supabase from "@/lib/supabase-browser"
+import supabase, { updateOnNewer } from "@/lib/supabase-browser"
 import { PostgrestError } from '@supabase/supabase-js'
-
-console.log("Context should load")
 
 export type TContext = {
   // userLoading: boolean
@@ -38,11 +36,11 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
   // const [user, setUser] = useState<User>()
   // const [userData, setUserData] = useState<UserData|null>(null)
   const [gamesLoading, setGamesLoading] = useState<boolean>(true)
-  const [games, setGames] = useState<Game[]>()
+  const [games, setGames] = useState<Game[]>([])
   const [companiesLoading, setCompaniesLoading] = useState<boolean>(true)
-  const [companies, setCompanies] = useState<Company[]>()
+  const [companies, setCompanies] = useState<Company[]>([])
   const [genresLoading, setGenresLoading] = useState<boolean>(true)
-  const [genres, setGenres] = useState<Genre[]>()
+  const [genres, setGenres] = useState<Genre[]>([])
   
   // const getUser = async () => {
     // const { data } = await supabase.auth.getUser()
@@ -66,12 +64,15 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
   // }
 
   const getGames = async () => {
+    console.log('Requesting a new list of games')
     const { data, error } = await supabase
       .from('app_games')
       .select()
 
-    if (data) setGames(data)
-    setGamesLoading(false)
+    if (data) {
+      setGames(data)
+      localStorage.setItem('gn-games', JSON.stringify(data))
+    }
     return {error: error}
   }
 
@@ -80,8 +81,10 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
       .from('companies')
       .select()
 
-    if (data) setCompanies(data)
-    setCompaniesLoading(false)
+    if (data) {
+      setCompanies(data)
+      localStorage.setItem('gn-companies', JSON.stringify(data))
+    }
     return {error: error}
   }
 
@@ -90,22 +93,53 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
       .from('genres')
       .select()
 
-    if (data) setGenres(data)
-    setGenresLoading(false)
+    if (data) {
+      setGenres(data)
+      localStorage.setItem('gn-genres', JSON.stringify(data))
+    }
     return {error: error}
   }
 
+  // Initial data loading
   useEffect(() => {
-    // getUser()
-    //   .then((res) => {if (res?.id) getPlayerSR(res.id)})
-    getGames()
-    getCompanies()
-    getGenres()
+    const localGames = localStorage.getItem('gn-games')
+    const localCompanies = localStorage.getItem('gn-companies')
+    const localGenres = localStorage.getItem('gn-genres')
+    const localLastUpdate = localStorage.getItem('gn-last-update')
+
+    // Use Local Storage as cache to prevent too much request to database over time
+    !localGames ? getGames() : setGames(JSON.parse(localGames))
+    !localCompanies? getCompanies() : setCompanies(JSON.parse(localCompanies))
+    !localGenres ? getGenres() : setGenres(JSON.parse(localGenres))
+
+    // Handle update
+    if (!localLastUpdate) {
+      const now = new Date()
+      localStorage.setItem('gn-last-update', JSON.stringify(now))
+    } else {
+      // Check if there's data to update
+      console.log('Your last update was :', JSON.parse(localLastUpdate))
+      updateOnNewer('app_games', 'created_at', getGames)
+      updateOnNewer('app_games', 'edited_at', getGames)
+      updateOnNewer('companies', 'created_at', getGames)
+      updateOnNewer('companies', 'edited_at', getGames)
+      updateOnNewer('genres', 'created_at', getGames)
+      updateOnNewer('genres', 'edited_at', getGames)
+    }
   }, [])
 
-  if (games) console.log('games loaded')
-  if (companies) console.log('companies loaded')
-  if (genres) console.log('genres loaded')
+  // End loader when everything is ok
+  useEffect(() => {
+    if (games.length > 0) setGamesLoading(false)
+    if (companies.length > 0) setCompaniesLoading(false)
+    if (genres.length > 0) setGenresLoading(false)
+  }, [games, companies, genres])
+  
+
+  // Debug informations
+  if (process.env.NEXT_PUBLIC_DEBUG && !gamesLoading && !companiesLoading && !genresLoading) {
+    console.log(games ? `${games.length} games loaded` : 'no games', companies ? `${companies.length} companies loaded` : 'no games', genres ? `${genres.length} genres loaded` : 'no games')
+  }
 
   return (
     <Context.Provider

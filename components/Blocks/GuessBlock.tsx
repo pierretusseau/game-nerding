@@ -1,8 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
-import Hint from '@/components/Atoms/Hint'
 import { getRandomEntries } from '@/Utils/Utils'
-import Debug from '../Debug/Debug'
+import Hint from '@/components/Atoms/Hint'
+import Debug from '@/components/Debug/Debug'
 
 type GameGenre = any
 
@@ -16,7 +16,7 @@ function GuessBlock() {
       const selectedGame = gamesArray[Math.floor(Math.random() * gamesArray.length)]
       setRandomGame(selectedGame)
       setRandomGenres(getRandomEntries(selectedGame.genres, 3))
-      console.log("answer is", selectedGame)
+      console.log("answer is", selectedGame.name, selectedGame)
     }
   }
 
@@ -26,7 +26,7 @@ function GuessBlock() {
 
   if (!companies) return
   return (
-    <>
+    <div>
       {/* Refresh button */}
       <Debug condition={process.env.NEXT_PUBLIC_DEBUG} option={randomGame}>
         <button className={`btn btn-default`} onClick={() => selectRandomGame(games)}>Refresh</button>
@@ -42,10 +42,10 @@ function GuessBlock() {
             <Hint type="genre" content={ randomGenres[1] } />
             <Hint type="genre" content={ randomGenres[2] } />
             <Hint type="company">
-              {companies.find(c => c.checksum === randomGame.developer)?.name || ''}
+              {companies.find(c => c.id === randomGame.developer)?.name || ''}
             </Hint>
             <Hint type="company">
-              {companies.find(c => c.checksum === randomGame.publisher)?.name || ''}
+              {companies.find(c => c.id === randomGame.publisher)?.name || ''}
             </Hint>
             <Hint type="year" content={randomGame.release_year.toString()} />
           </div>
@@ -58,7 +58,7 @@ function GuessBlock() {
           <div className="opacity-0 group-hover/test:opacity-100 pointer-events-none">{randomGame?.name}</div>
         </div>
       </Debug>
-    </>
+    </div>
   )
 }
 

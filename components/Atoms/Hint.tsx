@@ -21,9 +21,9 @@ const classes = [
 function Hint({type, children, content}: HintProps) {
   if (!children && !content && type !== 'genre') return
   else if (children || content) {
-    return <div className={`hint-${type} + ${classes.join(' ')}`}>{children ?? content}</div>
+    return <div className={`hint-${type} ${classes.join(' ')}`}>{children ?? content}</div>
   } else {
-    return <div className={`hint-${type} + ${classes.join(' ')}`}></div>
+    return <div className={`hint-${type} opacity-25 ${classes.join(' ')}`}></div>
   }
 }
 
