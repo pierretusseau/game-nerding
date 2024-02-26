@@ -1,10 +1,15 @@
 import { create } from "zustand"
 import { getRandomEntries } from '@/Utils/Utils'
 
+const defaultValues = {
+  timer: 30
+}
+
 const useGameStore = create(() => ({
   selectedGame: null as null | Game,
   gameToGuess: null as null | Game,
-  gameToGuessGenres: [] as GameGenre[]
+  gameToGuessGenres: [] as GameGenre[],
+  timer: defaultValues.timer
 }))
 
 // Game to guess
@@ -32,5 +37,13 @@ export const resetSelectedGame = () => {
 }
 
 // Opponent Selected Game
+
+// Timer
+export const decreaseTimer = () => {
+  useGameStore.setState((state) => ({ timer: state.timer - 1 }))
+}
+export const resetTimer = () => {
+  useGameStore.setState(() => ({ timer: defaultValues.timer }))
+}
 
 export default useGameStore

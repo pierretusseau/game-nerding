@@ -21,7 +21,7 @@ export default function Home() {
           'group/blocks',
           'grid',
           'grid-cols-3',
-          'grid-rows-2',
+          'grid-rows-3',
           'gap-4',
           'px-4',
           'h-full',
@@ -29,7 +29,8 @@ export default function Home() {
         ].join(' ')}
         style={{
           maxHeight: 'calc(100vh - 200px)',
-          gridTemplateRows: 'auto'
+          gridTemplateRows: 'minmax(0, max-content) 300px minmax(0, max-content)',
+          gridTemplateColumns: 'repeat(3, 300px)'
         }}
       >
         <PlayerBlock />

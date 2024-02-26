@@ -3,13 +3,14 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Context, TContext } from '@/app/context-provider'
-import useGameStore, { selectRandomGame, resetSelectedGame } from '@/store/useGameStore'
+import useGameStore, { selectRandomGame, resetSelectedGame, resetTimer } from '@/store/useGameStore'
 import { resetSearch } from '@/store/usePlayerStore'
 import Debug from '@/components/Debug/Debug'
 
 function Header() {
   const { games } = useContext<TContext>(Context)
   const gameToGuess = useGameStore((state) => state.gameToGuess)
+  // if (process.env.NEXT_PUBLIC_DEBUG) console.log(gameToGuess)
   return (
     <div className={`h-16 bg-neutral-900 flex justify-between items-center py-2 px-4`}>
       <div className={`group/header-left`}>
@@ -27,6 +28,7 @@ function Header() {
               if (games) selectRandomGame(games)
               resetSelectedGame()
               resetSearch()
+              resetTimer()
             }}>Refresh</button>
           </Debug>
         </div>
