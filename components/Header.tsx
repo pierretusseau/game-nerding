@@ -3,7 +3,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Context, TContext } from '@/app/context-provider'
-import useGameStore, { selectRandomGame, resetSelectedGame, resetTimer } from '@/store/useGameStore'
+import useGameStore, { selectRandomGame, resetSelectedGame, resetTimer, addTime, endTimer } from '@/store/useGameStore'
 import { resetSearch } from '@/store/usePlayerStore'
 import Debug from '@/components/Debug/Debug'
 
@@ -30,6 +30,18 @@ function Header() {
               resetSearch()
               resetTimer()
             }}>Refresh</button>
+          </Debug>
+          {/* Add Timer button */}
+          <Debug condition={process.env.NEXT_PUBLIC_DEBUG}>
+            <button className={`btn btn-default`} onClick={() => {
+              addTime()
+            }}>+30s</button>
+          </Debug>
+          {/* End Timer button */}
+          <Debug condition={process.env.NEXT_PUBLIC_DEBUG}>
+            <button className={`btn btn-default`} onClick={() => {
+              endTimer()
+            }}>End Timer</button>
           </Debug>
         </div>
         <div>

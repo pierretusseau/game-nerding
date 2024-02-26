@@ -45,5 +45,11 @@ export const decreaseTimer = () => {
 export const resetTimer = () => {
   useGameStore.setState(() => ({ timer: defaultValues.timer }))
 }
+export const addTime = (time = 30) => {
+  useGameStore.setState((state) => ({ timer: state.timer + 30 }))
+}
+export const endTimer = () => {
+  useGameStore.setState((state) => ({ timer: 0 }))
+}
 
 export default useGameStore

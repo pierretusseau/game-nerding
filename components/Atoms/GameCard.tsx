@@ -13,11 +13,13 @@ function GameCard({className, game, onClick }: GameCardProps) {
 
   const gameCardClasses = [
     "block",
-    "bg-neutral-800",
+    "bg-gradient-to-r",
+    "from-neutral-800",
     "py-1",
     "px-2",
     "rounded",
     "h-auto",
+    "w-full",
     "self-start",
     !onClick ? 'pointer-events-none' : ''
   ]
@@ -25,7 +27,7 @@ function GameCard({className, game, onClick }: GameCardProps) {
   return (
     <button
       key={`list-game-${game.id}`}
-      className={`${gameCardClasses.join(' ')} ${className}`}
+      className={`${gameCardClasses.join(' ')} ${className || ''}`}
       onClick={onClick ? () => onClick(game) : undefined}
     >
       <div className="text-left mb-2 font-bold">{game.name}</div>
