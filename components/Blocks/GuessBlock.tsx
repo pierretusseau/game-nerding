@@ -1,64 +1,58 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
-import { getRandomEntries } from '@/Utils/Utils'
+import useGameStore, { selectRandomGame } from '@/store/useGameStore'
+// import { getRandomEntries } from '@/Utils/Utils'
 import Hint from '@/components/Atoms/Hint'
-import Debug from '@/components/Debug/Debug'
-
-type GameGenre = any
 
 function GuessBlock() {
-  const { games, companies } = useContext<TContext>(Context)
-  const [randomGame, setRandomGame] = useState<Game|null|undefined>()
-  const [randomGenres, setRandomGenres] = useState<GameGenre[]|null>()
-
-  const selectRandomGame = (gamesArray: Game[] | undefined) => {
-    if (gamesArray) {
-      const selectedGame = gamesArray[Math.floor(Math.random() * gamesArray.length)]
-      setRandomGame(selectedGame)
-      setRandomGenres(getRandomEntries(selectedGame.genres, 3))
-      console.log("answer is", selectedGame.name, selectedGame)
-    }
-  }
+  const { games, companies, genres } = useContext<TContext>(Context)
+  const gameToGuess = useGameStore((state) => state.gameToGuess)
+  const gameToGuessGenres = useGameStore((state) => state.gameToGuessGenres)
 
   useEffect(() => {
-    selectRandomGame(games)
+    if (games) selectRandomGame(games)
   }, [games])
 
   if (!companies) return
   return (
-    <div>
-      {/* Refresh button */}
-      <Debug condition={process.env.NEXT_PUBLIC_DEBUG} option={randomGame}>
-        <button className={`btn btn-default`} onClick={() => selectRandomGame(games)}>Refresh</button>
-      </Debug>
-
-      {/* Actual Game App Block */}
-      <div className={`w-[300px] bg-neutral-900 p-4`}>
-        <h2>Choose the closest game !</h2>
-        <div>30s Left</div>
-        {randomGame && randomGenres && (
+    <>
+      <div className="group/guess-header row-start-1 row-span-1 col-start-2 col-span-1 flex flex-col items-center self-start">
+          <h2>Choose the closest game !</h2>
+          <div>30s Left</div>
+      </div>
+      <div className={[
+        'group/guess-body',
+        'w-[300px]',
+        'bg-neutral-900',
+        'p-4',
+        'row-start-2',
+        'row-span-1',
+        'col-start-2',
+        'col-span-1',
+        'self-start'
+     ].join(' ')}>
+        {genres && gameToGuess && gameToGuessGenres && (
           <div>
-            <Hint type="genre" content={ randomGenres[0] } />
-            <Hint type="genre" content={ randomGenres[1] } />
-            <Hint type="genre" content={ randomGenres[2] } />
-            <Hint type="company">
-              {companies.find(c => c.id === randomGame.developer)?.name || ''}
+            <Hint type="genre">
+              {genres.find(g => g.name === gameToGuessGenres[0])?.name || ''}
+            </Hint>
+            <Hint type="genre">
+              {genres.find(g => g.name === gameToGuessGenres[1])?.name || ''}
+            </Hint>
+            <Hint type="genre">
+              {genres.find(g => g.name === gameToGuessGenres[2])?.name || ''}
             </Hint>
             <Hint type="company">
-              {companies.find(c => c.id === randomGame.publisher)?.name || ''}
+              {companies.find(c => c.id === gameToGuess.developer)?.name || ''}
             </Hint>
-            <Hint type="year" content={randomGame.release_year.toString()} />
+            <Hint type="company">
+              {companies.find(c => c.id === gameToGuess.publisher)?.name || ''}
+            </Hint>
+            <Hint type="year" content={gameToGuess.release_year.toString()} />
           </div>
         )}
       </div>
-
-      {/* Game name */}
-      <Debug condition={process.env.NEXT_PUBLIC_DEBUG} option={randomGame}>
-        <div className="group/test btn">
-          <div className="opacity-0 group-hover/test:opacity-100 pointer-events-none">{randomGame?.name}</div>
-        </div>
-      </Debug>
-    </div>
+    </>
   )
 }
 

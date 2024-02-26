@@ -2,7 +2,7 @@ import React from 'react'
 
 type HintProps = {
   type: string
-  children?: React.ReactNode
+  children?: React.ReactNode | undefined
   content?: string
 }
 
@@ -20,8 +20,10 @@ const classes = [
 
 function Hint({type, children, content}: HintProps) {
   if (!children && !content && type !== 'genre') return
-  else if (children || content) {
-    return <div className={`hint-${type} ${classes.join(' ')}`}>{children ?? content}</div>
+  else if (children) {
+    return <div className={`hint-${type} ${classes.join(' ')}`}>{children}</div>
+  } else if (content) {
+    return <div className={`hint-${type} ${classes.join(' ')}`}>{content}</div>
   } else {
     return <div className={`hint-${type} opacity-25 ${classes.join(' ')}`}></div>
   }

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import ContextProvider from '@/app/context-provider'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -17,11 +19,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} h-screen overflow-hidden flex flex-col justify-between`}>
         <ContextProvider>
-          {/* <Header /> */}
+          <Header />
           {children}
-          {/* <Footer /> */}
+          <Footer />
         </ContextProvider>
       </body>
     </html>

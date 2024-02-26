@@ -5,6 +5,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
 import LoaderIntro from '@/components/Loaders/LoaderIntro'
 import GuessBlock from '@/components/Blocks/GuessBlock'
+import PlayerBlock from '@/components/Blocks/PlayerBlock'
 
 export default function Home() {
   const { gamesLoading, companiesLoading, genresLoading } = useContext<TContext>(Context)
@@ -14,8 +15,26 @@ export default function Home() {
     return <LoaderIntro />
   }
   return (
-    <main className="flex min-h-screen flex-col items-center gap-4 p-4">
-      <GuessBlock />
+    <main className="flex flex-col justify-stretch items-center gap-4 p-4">
+      <div
+        className={[
+          'group/blocks',
+          'grid',
+          'grid-cols-3',
+          'grid-rows-2',
+          'gap-4',
+          'px-4',
+          'h-full',
+          'items-end',
+        ].join(' ')}
+        style={{
+          maxHeight: 'calc(100vh - 200px)',
+          gridTemplateRows: 'auto'
+        }}
+      >
+        <PlayerBlock />
+        <GuessBlock />
+      </div>
     </main>
   );
 }

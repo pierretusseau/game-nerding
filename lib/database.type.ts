@@ -19,6 +19,7 @@ export type Database = {
           genres: Json[]
           id: number
           name: string
+          platforms: Json[]
           publisher: number | null
           rating: number | null
           rating_count: number | null
@@ -35,6 +36,7 @@ export type Database = {
           genres?: Json[]
           id: number
           name: string
+          platforms?: Json[]
           publisher?: number | null
           rating?: number | null
           rating_count?: number | null
@@ -51,6 +53,7 @@ export type Database = {
           genres?: Json[]
           id?: number
           name?: string
+          platforms?: Json[]
           publisher?: number | null
           rating?: number | null
           rating_count?: number | null
@@ -108,6 +111,7 @@ export type Database = {
           genres: Json[] | null
           id: number
           name: string
+          platforms: Json[]
           rating: number
           rating_count: number
         }
@@ -119,6 +123,7 @@ export type Database = {
           genres?: Json[] | null
           id?: number
           name?: string
+          platforms?: Json[]
           rating: number
           rating_count: number
         }
@@ -130,6 +135,7 @@ export type Database = {
           genres?: Json[] | null
           id?: number
           name?: string
+          platforms?: Json[]
           rating?: number
           rating_count?: number
         }
@@ -156,6 +162,33 @@ export type Database = {
           edited_at?: string | null
           id?: number
           name?: string
+        }
+        Relationships: []
+      }
+      platforms: {
+        Row: {
+          checksum: string | null
+          created_at: string
+          edited_at: string | null
+          id: number
+          name: string | null
+          platform_logo: number | null
+        }
+        Insert: {
+          checksum?: string | null
+          created_at?: string
+          edited_at?: string | null
+          id?: number
+          name?: string | null
+          platform_logo?: number | null
+        }
+        Update: {
+          checksum?: string | null
+          created_at?: string
+          edited_at?: string | null
+          id?: number
+          name?: string | null
+          platform_logo?: number | null
         }
         Relationships: []
       }

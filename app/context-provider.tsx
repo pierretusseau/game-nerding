@@ -17,6 +17,9 @@ export type TContext = {
   genresLoading: boolean
   genres?: Genre[]
   getGenres: () => Promise<{error: PostgrestError|null}>
+  platformsLoading: boolean
+  platforms?: Platform[]
+  getPlatforms: () => Promise<{error: PostgrestError|null}>
 }
  
 export const Context = createContext<TContext>({
@@ -29,6 +32,9 @@ export const Context = createContext<TContext>({
   genresLoading: false,
   genres: undefined,
   getGenres: () => new Promise(() => false),
+  platformsLoading: false,
+  platforms: undefined,
+  getPlatforms: () => new Promise(() => false),
 })
  
 export const ContextProvider = ({ children }: React.PropsWithChildren) => {
@@ -41,6 +47,8 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
   const [companies, setCompanies] = useState<Company[]>([])
   const [genresLoading, setGenresLoading] = useState<boolean>(true)
   const [genres, setGenres] = useState<Genre[]>([])
+  const [platformsLoading, setPlatformsLoading] = useState<boolean>(true)
+  const [platforms, setPlatforms] = useState<Platform[]>([])
   
   // const getUser = async () => {
     // const { data } = await supabase.auth.getUser()
@@ -100,17 +108,31 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
     return {error: error}
   }
 
+  const getPlatforms = async () => {
+    const { data, error } = await supabase
+      .from('platforms')
+      .select()
+
+    if (data) {
+      setPlatforms(data)
+      localStorage.setItem('gn-platform', JSON.stringify(data))
+    }
+    return {error: error}
+  }
+
   // Initial data loading
   useEffect(() => {
     const localGames = localStorage.getItem('gn-games')
     const localCompanies = localStorage.getItem('gn-companies')
     const localGenres = localStorage.getItem('gn-genres')
+    const localPlatforms = localStorage.getItem('gn-platforms')
     const localLastUpdate = localStorage.getItem('gn-last-update')
 
     // Use Local Storage as cache to prevent too much request to database over time
     !localGames ? getGames() : setGames(JSON.parse(localGames))
     !localCompanies? getCompanies() : setCompanies(JSON.parse(localCompanies))
     !localGenres ? getGenres() : setGenres(JSON.parse(localGenres))
+    !localPlatforms ? getPlatforms() : setPlatforms(JSON.parse(localPlatforms))
 
     // Handle update
     if (!localLastUpdate) {
@@ -125,6 +147,8 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
       updateOnNewer('companies', 'edited_at', getGames)
       updateOnNewer('genres', 'created_at', getGames)
       updateOnNewer('genres', 'edited_at', getGames)
+      updateOnNewer('platforms', 'created_at', getPlatforms)
+      updateOnNewer('platforms', 'edited_at', getPlatforms)
     }
   }, [])
 
@@ -133,13 +157,18 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
     if (games.length > 0) setGamesLoading(false)
     if (companies.length > 0) setCompaniesLoading(false)
     if (genres.length > 0) setGenresLoading(false)
-  }, [games, companies, genres])
+    if (platforms.length > 0) setPlatformsLoading(false)
   
-
-  // Debug informations
-  if (process.env.NEXT_PUBLIC_DEBUG && !gamesLoading && !companiesLoading && !genresLoading) {
-    console.log(games ? `${games.length} games loaded` : 'no games', companies ? `${companies.length} companies loaded` : 'no games', genres ? `${genres.length} genres loaded` : 'no games')
-  }
+    // Debug informations
+    if (process.env.NEXT_PUBLIC_DEBUG && !gamesLoading && !companiesLoading && !genresLoading && !platformsLoading) {
+      console.log([
+        games ? `${games.length} games loaded` : 'no games',
+        companies ? `${companies.length} companies loaded` : 'no companies',
+        genres ? `${genres.length} genres loaded` : 'no genres',
+        platforms ? `${platforms.length} platforms loaded` : 'no platforms',
+      ])
+    }
+  }, [games, companies, genres, platforms, gamesLoading, companiesLoading, genresLoading, platformsLoading])
 
   return (
     <Context.Provider
@@ -148,6 +177,7 @@ export const ContextProvider = ({ children }: React.PropsWithChildren) => {
         gamesLoading, games, getGames,
         companiesLoading, companies, getCompanies,
         genresLoading, genres, getGenres,
+        platformsLoading, platforms, getPlatforms,
       }}
     >
       {children}
