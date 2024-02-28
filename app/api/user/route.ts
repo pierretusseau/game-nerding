@@ -27,10 +27,10 @@ export async function GET() {
 
   console.log('Single user', singleUser)
 
-  if (singleUser.role !== 'admin') return NextResponse.json({
-    code: 401,
-    body: { message: `Not authorized`, }
-  })
+  // if (singleUser.role !== 'admin') return NextResponse.json({
+  //   code: 401,
+  //   body: { message: `Not authorized`, }
+  // })
 
   const { data, error } = await supabase
     .from('Users')
