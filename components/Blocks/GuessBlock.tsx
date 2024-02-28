@@ -1,41 +1,113 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useMemo, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
-import useGameStore, { selectRandomGame, decreaseTimer } from '@/store/useGameStore'
-// import { getRandomEntries } from '@/Utils/Utils'
-import Hint from '@/components/Atoms/Hint'
+import useMatchStore, { setTimer, setAnswer } from '@/store/useMatchStore'
+import Hints from '@/components/Blocks/Hints'
 import GameCard from '@/components/Atoms/GameCard'
 
-function GuessBlock() {
-  const { games, companies, genres } = useContext<TContext>(Context)
-  const gameToGuess = useGameStore((state) => state.gameToGuess)
-  const gameToGuessGenres = useGameStore((state) => state.gameToGuessGenres)
-  const timer = useGameStore((state) => state.timer)
+type GuessBlockProps = {
+  matchID: string
+}
 
+function GuessBlock({ matchID }: GuessBlockProps) {
+  const { companies, genres } = useContext<TContext>(Context)
+  const gameToGuess = useMatchStore((state) => state.gameToGuess)
+  const answer = useMatchStore((state) => state.answer)
+  const timer = useMatchStore((state) => state.timer)
+  const [remainingTime, setRemainingTime] = useState<number|undefined>()
+  const [round, setRound] = useState<number>(0)
+
+  // Start the round
+  /*----------------------------------------------------*/
   useEffect(() => {
-    const timerInterval = setInterval(() => decreaseTimer(), 1000)
+    console.log('matchID', matchID)
+    const now = Math.floor(new Date().getTime() / 1000);
+    const requestingTimer = async () => {
+      await fetch(`${window.location.origin}/api/match/${matchID}/timer`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      })
+        .then(res => res.json())
+        .then(({code, error, data}) => {
+          if (code === 200) {
+            setTimer(Math.floor(data.matchEndingTime / 1000) - now)
+          }
+          if (error) {
+            console.log(error)
+            throw new Error(error)
+          }
+        })
+        .catch(err => console.error(err))
+    }
 
-    if (timer === 0) clearInterval(timerInterval)
-  
+    requestingTimer()
+  }, [matchID])
+
+  // Start timer ticker
+  /*----------------------------------------------------*/
+  useEffect(() => {
+    if (timer === undefined) return
+
+    setRemainingTime(timer)
+
+    const timerTicker = setInterval(() => {
+      // @ts-ignore
+      setRemainingTime((time) => time - 1)
+    }, 1000)
+
+    if (timer === 0) clearInterval(timerTicker)
+
     return () => {
-      clearInterval(timerInterval)
+      clearInterval(timerTicker)
     }
   }, [timer])
-  
 
+  // Get the answer
+  /*----------------------------------------------------*/
   useEffect(() => {
-    if (games) selectRandomGame(games)
-  }, [games])
+    console.log('remaining time', remainingTime)
+    if (!remainingTime || remainingTime > 0) return
+    setTimer(0)
+    const requestingAnswer = async () => {
+      await fetch(`${window.location.origin}/api/match/${matchID}/answer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          round: round
+        })
+      })
+        .then(res => res.json())
+        .then(({code, error, data}) => {
+          console.log('requestingAnswer', code, data)
+          if (code === 200) {
+            setAnswer(data.game)
+          }
+          if (error) {
+            console.log(error)
+            throw new Error(error)
+          }
+        })
+        .catch(err => console.error(err))
+    }
+
+    requestingAnswer()
+
+  }, [matchID, round, remainingTime])
 
   if (!companies) return
   return (
     <>
       <div className="group/guess-header row-start-1 row-span-1 col-start-2 col-span-1 flex flex-col items-center self-start">
-          {timer > 0 ? (
+          {(remainingTime && remainingTime > 0) ? (
             <>
               <h2>Choose the closest game !</h2>
-              <div>{timer}s Left</div>
+              <div>{remainingTime}s Left</div>
             </>
-          ) : (
+          ) : null }
+          {answer && (
             <p>Time over</p>
           )}
       </div>
@@ -50,31 +122,12 @@ function GuessBlock() {
         'col-span-1',
         'self-start'
      ].join(' ')}>
-        {genres && gameToGuess && gameToGuessGenres && (
-          <div>
-            <Hint type="genre">
-              {genres.find(g => g.name === gameToGuessGenres[0])?.name || ''}
-            </Hint>
-            <Hint type="genre">
-              {genres.find(g => g.name === gameToGuessGenres[1])?.name || ''}
-            </Hint>
-            <Hint type="genre">
-              {genres.find(g => g.name === gameToGuessGenres[2])?.name || ''}
-            </Hint>
-            <Hint type="company">
-              {companies.find(c => c.id === gameToGuess.developer)?.name || ''}
-            </Hint>
-            <Hint type="company">
-              {companies.find(c => c.id === gameToGuess.publisher)?.name || ''}
-            </Hint>
-            <Hint type="year" content={gameToGuess.release_year.toString()} />
-          </div>
-        )}
+        {genres && gameToGuess && <Hints game={gameToGuess} />}
       </div>
       
-      {gameToGuess && timer === 0 && <GameCard
+      {answer && remainingTime === 0 && <GameCard
         className="group/player-game btn row-start-3 row-span-1 col-start-2 col-span-1"
-        game={gameToGuess}
+        game={answer}
       />}
     </>
   )

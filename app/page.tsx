@@ -2,40 +2,55 @@
 
 // import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Context, TContext } from '@/app/context-provider'
+import useMatchStore, { setMatch } from '@/store/useMatchStore'
 import LoaderIntro from '@/components/Loaders/LoaderIntro'
 import GuessBlock from '@/components/Blocks/GuessBlock'
 import PlayerBlock from '@/components/Blocks/PlayerBlock'
 
 export default function Home() {
-  const { gamesLoading, companiesLoading, genresLoading } = useContext<TContext>(Context)
+  const { userLoading, gamesLoading, companiesLoading, genresLoading, user, games } = useContext<TContext>(Context)
+  const matchStarted = useMatchStore((state) => state.matchStarted)
+  const router = useRouter()
 
   // Render
-  if (gamesLoading || companiesLoading || genresLoading) {
+  if (userLoading || gamesLoading || companiesLoading || genresLoading) {
     return <LoaderIntro />
   }
+
+  const handleMatchCreation = async (userObject: User) => {
+    await fetch(`${window.location.origin}/api/match`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user: userObject
+      })
+    })
+      .then(res => res.json())
+      .then(({code, error, data}) => {
+        console.log(code, data)
+        if (code === 200) {
+          setMatch(data.matchID)
+          router.push(`/match/${data.matchID}`)
+        }
+        if (error) {
+          console.log(error)
+          throw new Error(error)
+        }
+      })
+      .catch(err => console.error(err))
+  }
+
   return (
     <main className="flex flex-col justify-stretch items-center gap-4 p-4">
-      <div
-        className={[
-          'group/blocks',
-          'grid',
-          'grid-cols-3',
-          'grid-rows-3',
-          'gap-4',
-          'px-4',
-          'h-full',
-          'items-end',
-        ].join(' ')}
-        style={{
-          maxHeight: 'calc(100vh - 200px)',
-          gridTemplateRows: 'minmax(0, max-content) 300px minmax(0, max-content)',
-          gridTemplateColumns: 'repeat(3, 300px)'
-        }}
-      >
-        <PlayerBlock />
-        <GuessBlock />
-      </div>
+      {!matchStarted && user && games && (
+        <div>
+          <button className="btn" onClick={() => handleMatchCreation(user)}>Start Game</button>
+        </div>
+      )}
     </main>
   );
 }

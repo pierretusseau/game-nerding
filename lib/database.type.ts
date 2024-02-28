@@ -165,6 +165,36 @@ export type Database = {
         }
         Relationships: []
       }
+      matches: {
+        Row: {
+          created_at: string
+          id: string
+          match_ended: boolean
+          player_guest: Json | null
+          player_host: Json
+          round_end: string | null
+          rounds: Json[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_ended?: boolean
+          player_guest?: Json | null
+          player_host: Json
+          round_end?: string | null
+          rounds: Json[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_ended?: boolean
+          player_guest?: Json | null
+          player_host?: Json
+          round_end?: string | null
+          rounds?: Json[]
+        }
+        Relationships: []
+      }
       platforms: {
         Row: {
           checksum: string | null
@@ -192,12 +222,60 @@ export type Database = {
         }
         Relationships: []
       }
+      users: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          uuid: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          uuid?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_users_uuid_fkey"
+            columns: ["uuid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      choose_random_game: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          category: number | null
+          checksum: string
+          created_at: string
+          developer: number | null
+          edited_at: string | null
+          genres: Json[]
+          id: number
+          name: string
+          platforms: Json[]
+          publisher: number | null
+          rating: number | null
+          rating_count: number | null
+          release_year: number
+          unsure_developer: boolean
+          unsure_publisher: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

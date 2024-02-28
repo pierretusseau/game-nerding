@@ -31,11 +31,11 @@ function GameCard({className, game, onClick }: GameCardProps) {
       onClick={onClick ? () => onClick(game) : undefined}
     >
       <div className="text-left mb-2 font-bold">{game.name}</div>
-      <div className="flex flex-wrap gap-1">
+      {platforms && <div className="flex flex-wrap gap-1">
         {game.platforms.map((platform) => {
-          return <Tag key={`game-${game.id}-platform-${platform}`}>{platforms?.find(p => p.id === platform).name}</Tag>
+          return <Tag key={`game-${game.id}-platform-${platform}`}>{platforms?.find(p => p.id === platform)?.name}</Tag>
         })}
-      </div>
+      </div>}
     </button>
   )
 }

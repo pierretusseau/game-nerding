@@ -1,8 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
-import { updateSelectedGame } from '@/store/useGameStore'
+import { updatePlayerSelectedGame } from '@/store/useMatchStore'
 import usePlayerStore  from '@/store/usePlayerStore'
-import Tag from "@/components/Atoms/Tag"
 import GameCard from "@/components/Atoms/GameCard"
 
 type GameListProps = {
@@ -10,7 +9,7 @@ type GameListProps = {
 }
 
 function GameList({}: GameListProps) {
-  const { games, platforms } = useContext<TContext>(Context)
+  const { games } = useContext<TContext>(Context)
   const search = usePlayerStore((state) => state.search).toLowerCase()
 
   if (games && search.length > 0) {
@@ -24,7 +23,7 @@ function GameList({}: GameListProps) {
             return <GameCard
               key={`list-game-${game.id}`}
               game={game}
-              onClick={updateSelectedGame}
+              onClick={updatePlayerSelectedGame}
             />
           }
         )}

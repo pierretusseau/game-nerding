@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
-import useGameStore, { resetSelectedGame } from '@/store/useGameStore'
+import useMatchStore, { resetPlayerSelectedGame } from '@/store/useMatchStore'
 // import usePlayerStore from '@/store/usePlayerStore'
 import GameSearch from '@/components/Atoms/GameSearch'
 import GameList from '@/components/Atoms/GameList'
@@ -9,12 +9,13 @@ import GameCard from '@/components/Atoms/GameCard'
 import Debug from '@/components/Debug/Debug'
 
 function PlayerBlock() {
-  const { companies } = useContext<TContext>(Context)
-  const selectedGame = useGameStore((state) => state.selectedGame)
-  const gameToGuess = useGameStore((state) => state.gameToGuess)
-  const timer = useGameStore((state) => state.timer)
+  const { companies, genres } = useContext<TContext>(Context)
+  const playerSelectedGame = useMatchStore((state) => state.playerSelectedGame)
+  const gameToGuess = useMatchStore((state) => state.gameToGuess)
+  const timer = useMatchStore((state) => state.timer)
+  const answer = useMatchStore((state) => state.answer)
 
-  if (!companies || !gameToGuess) return null
+  if (!companies || !gameToGuess || !genres) return null
   // Render
   return (
     <>
@@ -40,24 +41,24 @@ function PlayerBlock() {
         "col-span-1",
         "relative",
      ].join(' ')}>
-        {!selectedGame && timer > 0 ? (
+        {!playerSelectedGame && timer ? (
           <div className={`flex flex-col items-start gap-2 h-full`}>
             <GameSearch />
             <GameList />
           </div>
-        ) : selectedGame && timer > 0 ? (
+        ) : playerSelectedGame && timer ? (
           <div className="h-full flex flex-col justify-center items-center gap-2">
             <h3>You have selected</h3>
-            <GameCard game={selectedGame} />
+            <GameCard game={playerSelectedGame} />
             <button className="btn btn-red" onClick={() => {
-              resetSelectedGame()
+              resetPlayerSelectedGame()
             }}>Cancel</button>
           </div>
-        ) : selectedGame && timer === 0 ? (
+        ) : playerSelectedGame && !timer && answer ? (
           <>
-            {selectedGame.genres
-                .filter((genre, index) => selectedGame.id === gameToGuess.id
-                  ? gameToGuess.genres.some(g => g === genre)
+            {/* {playerSelectedGame.genres
+                .filter((genre, index) => playerSelectedGame.id === answer.id
+                  ? [gameToGuess.genre1,gameToGuess.genre2,gameToGuess.genre3].some(g => g === genre)
                   : index > 2
                   ? false
                   : true
@@ -66,26 +67,35 @@ function PlayerBlock() {
                 <Hint
                   key={`selected-game-genre-${genre}`}
                   type="genre"
-                  content={genre?.toString()}
-                  valid={gameToGuess.genres.some((g: GameGenre) => {
+                  content={genres.find(g => g.id === genre)?.name}
+                  valid={answer.genres.some((g: GameGenre) => {
                     return g === genre
                   })}
                 />
               ))}
-            {selectedGame.genres.length < 2 && (
+            {playerSelectedGame.genres.length < 2 && (
               <Hint type="genre" />
             )}
-            {selectedGame.genres.length < 3 && (
+            {playerSelectedGame.genres.length < 3 && (
               <Hint type="genre" />
-            )}
+            )} */}
+            <Hint type="genre" valid={gameToGuess.genre1 === playerSelectedGame.genres.find((g: any) => g === gameToGuess.genre1)}>
+              {genres.find(genre => genre.id === playerSelectedGame.genres.find((g: any) => g === gameToGuess.genre1))?.name}
+            </Hint>
+            <Hint type="genre" valid={gameToGuess.genre2 === playerSelectedGame.genres.find((g: any) => g === gameToGuess.genre2)}>
+             {genres.find(genre => genre.id === playerSelectedGame.genres.find((g: any) => g === gameToGuess.genre2))?.name}
+            </Hint>
+            <Hint type="genre" valid={gameToGuess.genre3 === playerSelectedGame.genres.find((g: any) => g === gameToGuess.genre3)}>
+              {genres.find(genre => genre.id === playerSelectedGame.genres.find((g: any) => g === gameToGuess.genre3))?.name}
+            </Hint>
             <div>
-              <Hint type="company" valid={gameToGuess.developer === selectedGame.developer}>
-                {companies.find(c => c.id === selectedGame.developer)?.name}
+              <Hint type="company" valid={answer.developer === playerSelectedGame.developer}>
+                {companies.find(c => c.id === playerSelectedGame.developer)?.name}
               </Hint>
-              <Hint type="company" valid={gameToGuess.publisher === selectedGame.publisher}>
-                {companies.find(c => c.id === selectedGame.publisher)?.name}
+              <Hint type="company" valid={answer.publisher === playerSelectedGame.publisher}>
+                {companies.find(c => c.id === playerSelectedGame.publisher)?.name}
               </Hint>
-              <Hint type="year" content={selectedGame.release_year.toString()} valid={gameToGuess.release_year === selectedGame.release_year}/>
+              <Hint type="year" content={playerSelectedGame.release_year.toString()} valid={answer.release_year === playerSelectedGame.release_year}/>
             </div>
           </>
         ) : (
@@ -94,9 +104,9 @@ function PlayerBlock() {
           </div>
         )}
       </div>
-      {selectedGame && timer === 0 && <GameCard
+      {playerSelectedGame && timer === 0 && <GameCard
         className="group/player-game btn row-start-3 row-span-1 col-start-1 col-span-1"
-        game={selectedGame}
+        game={playerSelectedGame}
       />}
     </>
   )
