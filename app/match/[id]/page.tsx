@@ -3,6 +3,7 @@
 // import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
+import { useRouter } from 'next/navigation'
 import useMatchStore, { startGame } from '@/store/useMatchStore'
 import LoaderIntro from '@/components/Loaders/LoaderIntro'
 import GuessBlock from '@/components/Blocks/GuessBlock'
@@ -11,6 +12,7 @@ import PlayerBlock from '@/components/Blocks/PlayerBlock'
 export default function Match({ params }: { params: { id: string } }) {
   const { gamesLoading, companiesLoading, genresLoading } = useContext<TContext>(Context)
   const matchStarted = useMatchStore((state) => state.matchStarted)
+  const router = useRouter()
 
   // Start the match
   /*----------------------------------------------------*/
@@ -29,6 +31,11 @@ export default function Match({ params }: { params: { id: string } }) {
           }
           if (error) {
             console.log(error)
+            if (error.code === 'PGRST116') {
+              // Match not found
+              router.push('/')
+              throw new Error('Match not found, returning to home')
+            }
             throw new Error(error)
           }
         })
@@ -36,7 +43,7 @@ export default function Match({ params }: { params: { id: string } }) {
     }
 
     requestingGameData()
-  }, [params.id])
+  }, [router, params.id])
   
   // Render
   if (gamesLoading || companiesLoading || genresLoading) {
