@@ -41,6 +41,8 @@ export async function GET(
     const now = new Date()
     matchEndingTime = new Date(now)
       .setSeconds(now.getSeconds() + 30)
+    
+    console.log('New random game is', randomGame)
 
     const { data: newRoundData, error: newRoundError } = await supabase
       .from('matches')
