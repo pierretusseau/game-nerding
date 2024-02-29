@@ -26,8 +26,11 @@ function PlayerHints() {
         <Hint type="company" valid={answer.developer === playerSelectedGame.developer}>
           {companies.find(c => c.id === playerSelectedGame.developer)?.name}
         </Hint>
-        <Hint type="company" valid={answer.publisher === playerSelectedGame.publisher}>
-          {companies.find(c => c.id === playerSelectedGame.publisher)?.name}
+        {/* @ts-ignore */}
+        <Hint type="company" valid={answer?.publishers?.join(',') === playerSelectedGame.publishers.join(',')}>
+          {/* {companies.find(c => c.id === playerSelectedGame.publisher)?.name} */}
+          {/* @ts-ignore */}
+          {playerSelectedGame?.publishers?.map(c => companies.find(comp => comp.id === c)?.name).join(', ')}
         </Hint>
         <Hint type="year" content={playerSelectedGame.release_year.toString()} valid={answer.release_year === playerSelectedGame.release_year}/>
       </div>

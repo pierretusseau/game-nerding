@@ -71,12 +71,14 @@ export async function GET(
       genres.push(...currentGame.genres)
     }
 
+    const publishers = currentGame.publishers as GamePublishers
+
     const formatedGameToGuess = {
       genre1: genres[0],
       genre2: genres[1] || null,
       genre3: genres[2] || null,
       developer: currentGame?.developer,
-      publisher: currentGame?.publisher,
+      publisher: publishers,
       release_year: currentGame?.release_year
     }
 

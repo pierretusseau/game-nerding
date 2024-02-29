@@ -13,6 +13,7 @@ declare global {
   type GameDeveloper = Json
   type GamePublisher = Json
   type GamePlatform = Json
+  type GamePublishers = Json[]
   type UserData = DB['public']['Tables']['users']['Row']
   type User = User
   type GameHints = {
@@ -20,7 +21,7 @@ declare global {
     genre2: number|null,
     genre3: number|null,
     developer: number,
-    publisher: number,
+    publisher: number[],
     release_year: number,
   }
 }

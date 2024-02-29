@@ -46,7 +46,7 @@ export default function Home() {
     <main className="flex flex-col justify-stretch items-center gap-4 p-4">
       {!matchStarted && user && games && (
         <div>
-          <button className="btn" onClick={() => handleMatchCreation(user)}>Start Game</button>
+          <button className="btn" onClick={() => handleMatchCreation(user)}>Create Match</button>
         </div>
       )}
     </main>

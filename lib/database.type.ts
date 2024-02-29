@@ -20,7 +20,8 @@ export type Database = {
           id: number
           name: string
           platforms: Json[]
-          publisher: number | null
+          publisher: number
+          publishers: Json
           rating: number | null
           rating_count: number | null
           release_year: number
@@ -37,7 +38,8 @@ export type Database = {
           id: number
           name: string
           platforms?: Json[]
-          publisher?: number | null
+          publisher: number
+          publishers?: Json
           rating?: number | null
           rating_count?: number | null
           release_year: number
@@ -54,7 +56,8 @@ export type Database = {
           id?: number
           name?: string
           platforms?: Json[]
-          publisher?: number | null
+          publisher?: number
+          publishers?: Json
           rating?: number | null
           rating_count?: number | null
           release_year?: number
@@ -268,7 +271,8 @@ export type Database = {
           id: number
           name: string
           platforms: Json[]
-          publisher: number | null
+          publisher: number
+          publishers: Json
           rating: number | null
           rating_count: number | null
           release_year: number

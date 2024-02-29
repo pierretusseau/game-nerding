@@ -13,7 +13,6 @@ function Header() {
   const router = useRouter()
   const pathname = usePathname()
   const matchID = useMatchStore((state) => state.matchID)
-  console.log(matchID)
 
   const handleDeleteMatch = async () => {
     const matchToDelete = matchID || pathname.split('/match/')[1]
