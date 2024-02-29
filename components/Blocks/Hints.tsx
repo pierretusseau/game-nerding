@@ -28,7 +28,7 @@ function Hints({ game }: HintsProps) {
       <Hint type="company">
         {/* {companies.find(c => c.id === game.publisher)?.name || ''} */}
         {/* @ts-ignore */}
-        {game?.publisher?.map(c => companies?.find(comp => comp.id === c).name)}
+        {game?.publisher?.map(c => companies?.find(comp => comp.id === c).name).join(', ')}
       </Hint>
       <Hint type="year" content={game.release_year.toString()} />
     </div>

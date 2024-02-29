@@ -14,7 +14,7 @@ export async function GET(
 
   const now = new Date()
   const matchEndingTime = new Date(now)
-    .setSeconds(now.getSeconds() + 10)
+    .setSeconds(now.getSeconds() + 30)
 
   const { data, error } = await supabase
     .from('matches')

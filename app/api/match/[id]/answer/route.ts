@@ -16,7 +16,7 @@ export async function POST(
 
   const now = new Date()
   const matchEndingTime = new Date(now)
-    .setSeconds(now.getSeconds() + 35)
+    .setSeconds(now.getSeconds() + 30)
 
   const { data, error } = await supabase
     .from('matches')

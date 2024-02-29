@@ -24,7 +24,6 @@ export default function Match({ params }: { params: { id: string } }) {
       })
         .then(res => res.json())
         .then(({code, error, data}) => {
-          console.log(code, data)
           if (code === 200) {
             startGame(data)
           }

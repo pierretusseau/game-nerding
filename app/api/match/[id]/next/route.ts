@@ -2,7 +2,7 @@ import 'server-only'
 
 import { NextRequest, NextResponse } from 'next/server'
 import createGamemasterClient from '@/lib/supabase-gamemaster'
-import { getRandomEntries } from '@/Utils/Utils'
+import { formatSupabaseDateTime, getRandomEntries } from '@/Utils/Utils'
 
 // Create a new match
 /*----------------------------------------------------*/
@@ -13,6 +13,7 @@ export async function GET(
   console.log('Requesting next round')
   const supabase = await createGamemasterClient()
   const id = params.id
+  let matchEndingTime
 
   // Update Reserve option
   const { data, error } = await supabase
@@ -37,16 +38,21 @@ export async function GET(
       body: { message: `Error while requesting a new random game` }
     })
 
+    const now = new Date()
+    matchEndingTime = new Date(now)
+      .setSeconds(now.getSeconds() + 30)
+
     const { data: newRoundData, error: newRoundError } = await supabase
       .from('matches')
       .update({
         rounds: [
           ...data.rounds,
           randomGame[0]
-        ]
+        ],
+        round_end: formatSupabaseDateTime(matchEndingTime)
       })
       .eq('id', id)
-      .select('rounds')
+      .select('rounds, round_end')
       .single()
     
       if (!newRoundData || newRoundError) return NextResponse.json({
@@ -61,8 +67,6 @@ export async function GET(
     const rounds = newRound.rounds as Game[]
     const currentRound = newRound.rounds.length - 1
     const currentGame = rounds[currentRound]
-
-    console.log('Game to guess :', currentGame.name)
 
     let genres = []
     if (currentGame.genres.length > 3) {
@@ -82,15 +86,13 @@ export async function GET(
       release_year: currentGame?.release_year
     }
 
-    const now = new Date()
-    const roundEndingTime = new Date(now)
-      .setSeconds(now.getSeconds() + 10)
+    console.log(newRound.round_end)
     
     return NextResponse.json({
       code: 200,
       data: {
         gameToGuess: formatedGameToGuess,
-        roundEndingTime
+        roundEndingTime: matchEndingTime
       },
       body: { message: `Match creation process ended` }
     })
