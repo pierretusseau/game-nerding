@@ -13,8 +13,6 @@ const options = {
   }
 }
 
-console.log('Secret key is:', process.env.SUPABASE_SERVICE_KEY)
-
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async () => {
   return createClient<Database>(
