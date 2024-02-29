@@ -13,6 +13,7 @@ export default function Match({ params }: { params: { id: string } }) {
   const { gamesLoading, companiesLoading, genresLoading } = useContext<TContext>(Context)
   const matchStarted = useMatchStore((state) => state.matchStarted)
   const router = useRouter()
+  const [matchNotFound, setMatchNotFound] = useState(false)
 
   // Start the match
   /*----------------------------------------------------*/
@@ -30,13 +31,12 @@ export default function Match({ params }: { params: { id: string } }) {
             startGame(data)
           }
           if (error) {
-            console.log(error)
             if (error.code === 'PGRST116') {
               // Match not found
-              router.push('/')
-              throw new Error('Match not found, returning to home')
+              setMatchNotFound(true)
+            } else {
+              throw new Error(error)
             }
-            throw new Error(error)
           }
         })
         .catch(err => console.error(err))
@@ -49,6 +49,13 @@ export default function Match({ params }: { params: { id: string } }) {
   if (gamesLoading || companiesLoading || genresLoading) {
     return <LoaderIntro />
   }
+  if (matchNotFound) {
+    return <div className="inline-flex flex-col gap-2 justify-center mt-2">
+      <h2>Match not found</h2>
+      <button className="btn" onClick={() => router.push('/')}>Return to home</button>
+    </div>
+  } 
+
   return (
     <main className="flex flex-col justify-stretch items-center gap-4 p-4">
       {!matchStarted ? (

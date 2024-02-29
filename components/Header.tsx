@@ -39,7 +39,7 @@ function Header() {
   }
 
   return (
-    <div className={`h-16 bg-neutral-900 flex justify-between items-center py-2 px-4`}>
+    <div className={`w-screen h-16 bg-neutral-900 flex justify-between items-center py-2 px-4`}>
       <div className={`group/header-left`}>
         <Link href={`/`}>GameNerding</Link>
       </div>

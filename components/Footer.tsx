@@ -5,7 +5,7 @@ import React from 'react'
 
 function Footer() {
   return (
-    <div className={`h-10 bg-neutral-900 flex justify-between items-center py-2 px-4 mt-auto`}>
+    <div className={`w-screen h-10 bg-neutral-900 flex justify-between items-center py-2 px-4 mt-auto`}>
       <div className={`group/header-left`}>
         &copy; GameNerding {new Date().getFullYear()}
       </div>

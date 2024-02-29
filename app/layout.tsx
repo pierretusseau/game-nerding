@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} h-screen overflow-hidden flex flex-col justify-between`}>
+      <body className={`${inter.className} h-screen overflow-hidden flex flex-col justify-between items-center`}>
         <ContextProvider>
           <Header />
           {children}
