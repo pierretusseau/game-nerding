@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useContext, useEffect, useState } from 'react'
 import { Context, TContext } from '@/app/context-provider'
-import useMatchStore, { setTimer, setAnswer } from '@/store/useMatchStore'
+import useMatchStore, { setGameToGuess, setTimer, setAnswer, setAnswerLoading, newRound } from '@/store/useMatchStore'
 import Hints from '@/components/Blocks/Hints'
 import GameCard from '@/components/Atoms/GameCard'
+import GuessBlockHeader from './GuessBlockHeader'
 
 type GuessBlockProps = {
   matchID: string
@@ -14,13 +15,10 @@ function GuessBlock({ matchID }: GuessBlockProps) {
   const answer = useMatchStore((state) => state.answer)
   const timer = useMatchStore((state) => state.timer)
   const [remainingTime, setRemainingTime] = useState<number|undefined>()
-  const [round, setRound] = useState<number>(0)
 
   // Start the round
   /*----------------------------------------------------*/
   useEffect(() => {
-    console.log('matchID', matchID)
-    const now = Math.floor(new Date().getTime() / 1000);
     const requestingTimer = async () => {
       await fetch(`${window.location.origin}/api/match/${matchID}/timer`, {
         method: "GET",
@@ -31,6 +29,7 @@ function GuessBlock({ matchID }: GuessBlockProps) {
         .then(res => res.json())
         .then(({code, error, data}) => {
           if (code === 200) {
+            const now = Math.floor(new Date().getTime() / 1000)
             setTimer(Math.floor(data.matchEndingTime / 1000) - now)
           }
           if (error) {
@@ -69,48 +68,39 @@ function GuessBlock({ matchID }: GuessBlockProps) {
     console.log('remaining time', remainingTime)
     if (!remainingTime || remainingTime > 0) return
     setTimer(0)
+    setAnswerLoading(true)
     const requestingAnswer = async () => {
       await fetch(`${window.location.origin}/api/match/${matchID}/answer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          round: round
-        })
+        }
       })
         .then(res => res.json())
         .then(({code, error, data}) => {
-          console.log('requestingAnswer', code, data)
           if (code === 200) {
             setAnswer(data.game)
+            setAnswerLoading(false)
           }
           if (error) {
             console.log(error)
+            setAnswerLoading(false)
             throw new Error(error)
           }
         })
-        .catch(err => console.error(err))
+        .catch(err => {
+          console.error(err)
+          setAnswerLoading(false)
+        })
     }
 
     requestingAnswer()
-
-  }, [matchID, round, remainingTime])
+  }, [matchID, remainingTime])
 
   if (!companies) return
   return (
     <>
-      <div className="group/guess-header row-start-1 row-span-1 col-start-2 col-span-1 flex flex-col items-center self-start">
-          {(remainingTime && remainingTime > 0) ? (
-            <>
-              <h2>Choose the closest game !</h2>
-              <div>{remainingTime}s Left</div>
-            </>
-          ) : null }
-          {answer && (
-            <p>Time over</p>
-          )}
-      </div>
+      <GuessBlockHeader matchID={matchID} remainingTime={remainingTime} />
       <div className={[
         'group/guess-body',
         'w-[300px]',

@@ -13,7 +13,12 @@ const classes = [
 ] as string[]
 
 function Debug({condition, children}: DebugProps) {
-  if ((condition === true || condition === 'true')) {
+  const fullConditions = [
+    condition,
+    process.env.NEXT_PUBLIC_DEBUG === 'true'
+  ]
+
+  if (fullConditions.every(v => v === (true || 'true'))) {
     return (
       <div className={classes.join(' ')}>{children}</div>
     )

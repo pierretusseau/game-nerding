@@ -37,8 +37,6 @@ export async function GET(
     const currentRound = data.rounds.length - 1
     const currentGame = rounds[currentRound]
 
-    console.log('Game to guess :', currentGame.name)
-
     let genres = []
     if (currentGame.genres.length > 3) {
       genres.push(...getRandomEntries(currentGame.genres))

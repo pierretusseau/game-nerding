@@ -10,30 +10,56 @@ export async function GET(
   req: NextRequest, 
   { params }: { params: { id: string } }
 ) {
-  console.log('Requesting next game')
+  console.log('Requesting next round')
   const supabase = await createGamemasterClient()
   const id = params.id
 
   // Update Reserve option
   const { data, error } = await supabase
     .from('matches')
-    .select('rounds')
+    .select('player_host, rounds')
     .eq('id', id)
     .single()
 
-  if (error) {
-    return NextResponse.json({
+  if (error) return NextResponse.json({
+    code: 500,
+    error,
+    body: { message: `Error while requesting current match` }
+  })
+
+  let newRound
+  if (data && data.rounds) {
+    const { data: randomGame, error: randomGameError } = await supabase.rpc('choose_random_game')
+    
+    if (!randomGame || randomGameError) return NextResponse.json({
       code: 500,
       error,
-      body: { message: `Error while requesting current match` }
+      body: { message: `Error while requesting a new random game` }
     })
+
+    const { data: newRoundData, error: newRoundError } = await supabase
+      .from('matches')
+      .update({
+        rounds: [
+          ...data.rounds,
+          randomGame[0]
+        ]
+      })
+      .eq('id', id)
+      .select('rounds')
+      .single()
+    
+      if (!newRoundData || newRoundError) return NextResponse.json({
+        code: 500,
+        error,
+        body: { message: `Error while creating a new round` }
+      })
+      newRound = newRoundData
   }
 
-  // if (process.env.NEXT_PUBLIC_DEBUG) console.log('The match is :', data)
-
-  if (data && data.rounds) {
-    const rounds = data.rounds as Game[]
-    const currentRound = data.rounds.length - 1
+  if (newRound && newRound.rounds) {
+    const rounds = newRound.rounds as Game[]
+    const currentRound = newRound.rounds.length - 1
     const currentGame = rounds[currentRound]
 
     console.log('Game to guess :', currentGame.name)
@@ -54,11 +80,16 @@ export async function GET(
       release_year: currentGame?.release_year
     }
 
-    console.log(formatedGameToGuess)
+    const now = new Date()
+    const roundEndingTime = new Date(now)
+      .setSeconds(now.getSeconds() + 10)
     
     return NextResponse.json({
       code: 200,
-      data: 'lol',
+      data: {
+        gameToGuess: formatedGameToGuess,
+        roundEndingTime
+      },
       body: { message: `Match creation process ended` }
     })
   }

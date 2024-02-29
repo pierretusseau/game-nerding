@@ -15,7 +15,6 @@ export default function Match({ params }: { params: { id: string } }) {
   // Start the match
   /*----------------------------------------------------*/
   useEffect(() => {
-    if (matchStarted) return
     const requestingGameData = async () => {
       await fetch(`${window.location.origin}/api/match/${params.id}`, {
         method: "GET",
@@ -38,7 +37,7 @@ export default function Match({ params }: { params: { id: string } }) {
     }
 
     requestingGameData()
-  }, [matchStarted, params.id])
+  }, [params.id])
   
   // Render
   if (gamesLoading || companiesLoading || genresLoading) {

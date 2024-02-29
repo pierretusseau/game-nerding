@@ -5,6 +5,7 @@ const defaultValues = {
   matchStarted: false,
   playerSelectedGame: null as null | Game,
   gameToGuess: null as null | GameHints,
+  answerLoading: false,
   answer: null as null | Game,
   gameToGuessGenres: [] as GameGenre[],
   timer: undefined as undefined | number,
@@ -19,7 +20,7 @@ export const fullGameReset = () => {
   useMatchStore.setState(defaultValues)
 }
 
-// Start Game
+// Round
 export const setMatch = (matchID: number) => {
   useMatchStore.setState({ matchID: matchID })
 }
@@ -27,6 +28,20 @@ export const startGame = (hints: GameHints) => {
   useMatchStore.setState({
     gameToGuess: hints,
     matchStarted: true
+  })
+}
+export const setGameToGuess = (hints: GameHints) => {
+  useMatchStore.setState({
+    gameToGuess: hints
+  })
+}
+export const newRound = () => {
+  useMatchStore.setState({
+    playerSelectedGame: defaultValues.playerSelectedGame,
+    gameToGuess: defaultValues.gameToGuess,
+    answerLoading: defaultValues.answerLoading,
+    answer: defaultValues.answer,
+    timer: defaultValues.timer,
   })
 }
 
@@ -52,6 +67,13 @@ export const endTimer = () => {
 }
 
 // Answer
+export const setAnswerLoading = (bool?: boolean) => {
+  if (bool) {
+    useMatchStore.setState(() => ({ answerLoading: bool }))
+  } else {
+    useMatchStore.setState((state) => ({ answerLoading: !state.answerLoading }))
+  }
+}
 export const setAnswer = (answer: Game) => {
   useMatchStore.setState(() => ({ answer: answer }))
 }

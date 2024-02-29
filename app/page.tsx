@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation'
 import { Context, TContext } from '@/app/context-provider'
 import useMatchStore, { setMatch } from '@/store/useMatchStore'
 import LoaderIntro from '@/components/Loaders/LoaderIntro'
-import GuessBlock from '@/components/Blocks/GuessBlock'
-import PlayerBlock from '@/components/Blocks/PlayerBlock'
 
 export default function Home() {
   const { userLoading, gamesLoading, companiesLoading, genresLoading, user, games } = useContext<TContext>(Context)

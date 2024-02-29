@@ -12,8 +12,7 @@ export async function POST(
 ) {
   
   const supabase = await createGamemasterClient()
-  const { round } = await req.json()
-  console.log(`Requesting answer to game ${params.id} round ${round}`)
+  console.log(`Requesting answer to game ${params.id} for current round`)
 
   const now = new Date()
   const matchEndingTime = new Date(now)
@@ -42,7 +41,7 @@ export async function POST(
     })
   }
 
-  const roundAnswer = data.rounds[round]
+  const roundAnswer = data.rounds[data.rounds.length - 1]
 
   return NextResponse.json({
     code: 200,
