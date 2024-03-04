@@ -19,7 +19,7 @@ function GuessBlockHeader({ matchID, remainingTime }: GuessBlockHeaderProps) {
     const requestingTimer = async () => {
       await fetch(`${window.location.origin}/api/match/${matchID}/next`, {
         method: "GET",
-        cache: 'no-store',
+        // cache: 'no-store',
         headers: {
           "Content-Type": "application/json",
         }
