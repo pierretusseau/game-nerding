@@ -14,10 +14,6 @@ export async function POST(
   const supabase = await createGamemasterClient()
   console.log(`Requesting answer to game ${params.id} for current round`)
 
-  const now = new Date()
-  const matchEndingTime = new Date(now)
-    .setSeconds(now.getSeconds() + 30)
-
   const { data, error } = await supabase
     .from('matches')
     .select('rounds')
@@ -29,24 +25,40 @@ export async function POST(
     body: { message: `Error while getting the answer of the round` }
   })
 
-  if (!data || !data.rounds.length) return NextResponse.json({
+  if (!data || !data.rounds || !data.rounds.length) return NextResponse.json({
     code: 500,
     body: { message: `Wrong round asked` }
   })
 
-  if (Math.floor(matchEndingTime / 1000) - now.getTime() / 1000 < 0) {
+  const { data: roundData, error: roundError } = await supabase
+    .from('rounds')
+    .select('full_game, end_time')
+    .eq('match_id', params.id)
+    .eq('id', data.rounds[data.rounds.length - 1] as number)
+    .single()
+
+  if (roundError) return NextResponse.json({
+    code: 500,
+    body: { message: `Error while getting answer for match round` }
+  })
+
+  const now = new Date().getTime()
+  const matchEndingTime = new Date(roundData.end_time).getTime()
+
+  if (Math.floor(matchEndingTime) - now > 0) {
     return NextResponse.json({
       code: 500,
+      error: 'Did you try to cheat ?',
       body: { message: `Did you try to cheat ?` }
     })
   }
 
-  const roundAnswer = data.rounds[data.rounds.length - 1]
+  console.log('Answer should be :', roundData.full_game)
 
   return NextResponse.json({
     code: 200,
     data: {
-      game: roundAnswer
+      game: roundData.full_game as Game
     },
     body: { message: `Match creation process ended` }
   })

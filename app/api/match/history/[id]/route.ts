@@ -5,26 +5,21 @@ import createGamemasterClient from '@/lib/supabase-gamemaster'
 
 // Create a new match
 /*----------------------------------------------------*/
-export async function POST(req: NextRequest) {
-  console.log('Requesting match creation')
+export async function GET(
+  req: NextRequest, 
+  { params }: { params: { id: string } }
+) {
+  console.log('Requesting match history')
   const supabase = await createGamemasterClient()
-  const { user, rules } = await req.json()
+  const user = params.id
 
-  // Check if user is provided
-  if (!user) NextResponse.json({
-    code: 500,
-    body: { message: `A user is required to create a match` }
-  })
+    // Create new match
+    const { data, error } = await supabase
+      .from('matches')
+      .select()
+      .eq('player_host->>name', user)
 
-  // Create new match
-  const { data, error } = await supabase
-    .from('matches')
-    .insert({
-      player_host: user,
-      rules: rules,
-    })
-    .select()
-    .single()
+  console.log('user', user, 'has matches:', data)
 
   if (error) {
     return NextResponse.json({
@@ -36,9 +31,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     code: 200,
-    data: {
-      matchID: data.id
-    },
+    data,
     body: { message: `Match creation process ended` }
   })
 }

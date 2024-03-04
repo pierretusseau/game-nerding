@@ -2,37 +2,28 @@
 
 // import Image from "next/image";
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Context, TContext } from '@/app/context-provider'
-import useMatchStore, { setMatch } from '@/store/useMatchStore'
+import Link from 'next/link'
 import LoaderIntro from '@/components/Loaders/LoaderIntro'
+import MatchRules from '@/components/Blocks/MatchRules'
 
 export default function Home() {
   const { userLoading, gamesLoading, companiesLoading, genresLoading, user, games } = useContext<TContext>(Context)
-  const matchStarted = useMatchStore((state) => state.matchStarted)
-  const router = useRouter()
+  const [matchHistory, setMatchHistory] = useState<Match[]|undefined>()
+  const [matchCreating, setMatchCreating] = useState<boolean>(false)
 
-  // Render
-  if (userLoading || gamesLoading || companiesLoading || genresLoading) {
-    return <LoaderIntro />
-  }
-
-  const handleMatchCreation = async (userObject: User) => {
-    await fetch(`${window.location.origin}/api/match`, {
-      method: "POST",
+  const handleMatchHistory = async (player: string) => {
+    await fetch(`${window.location.origin}/api/match/history/${player}`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        user: userObject
-      })
     })
       .then(res => res.json())
       .then(({code, error, data}) => {
         console.log(code, data)
         if (code === 200) {
-          setMatch(data.matchID)
-          router.push(`/match/${data.matchID}`)
+          setMatchHistory(data)
         }
         if (error) {
           console.log(error)
@@ -42,13 +33,56 @@ export default function Home() {
       .catch(err => console.error(err))
   }
 
+  const handleMatchDeletion = async (matchID: string) => {
+    await fetch(`${window.location.origin}/api/match/${matchID}/delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+      .then(res => res.json())
+      .then(({code, error}) => {
+        if (code === 200) {
+          console.log('Match deleted properly')
+          if (matchHistory) setMatchHistory(matchHistory.filter(match => {
+            return match.id !== matchID
+          }))
+        }
+        if (error) {
+          console.log(error)
+          throw new Error(error)
+        }
+      })
+      .catch(err => console.error(err))
+  }
+
+  useEffect(() => {
+    if (matchHistory !== undefined || user === undefined) return
+    handleMatchHistory(user.name)
+  }, [user])
+
+  // Render
+  if (userLoading || gamesLoading || companiesLoading || genresLoading) {
+    return <LoaderIntro />
+  }
+
   return (
     <main className="flex flex-col justify-stretch items-center gap-4 p-4">
-      {!matchStarted && user && games && (
-        <div>
-          <button className="btn" onClick={() => handleMatchCreation(user)}>Create Match</button>
-        </div>
+      {user && games && (
+        <>
+          {!matchCreating ? (
+            <div>
+              <button className="btn" onClick={() => setMatchCreating(true)}>Create Match</button>
+            </div>
+          ) : <MatchRules />}
+        </>
       )}
+      {matchHistory?.map(match => {
+        return <div key={`match-history-match-${match.id}`} className="flex gap-2 items-center">
+          <Link href={`/match/${match.id}`}>{match.id}</Link>
+          <button className="btn" onClick={() => handleMatchDeletion(match.id)}>Delelete</button>
+        </div>
+      })}
     </main>
   );
 }

@@ -2,7 +2,6 @@ import 'server-only'
 
 import { NextRequest, NextResponse } from 'next/server'
 import createGamemasterClient from '@/lib/supabase-gamemaster'
-import { getRandomEntries } from '@/Utils/Utils'
 
 // Create a new match
 /*----------------------------------------------------*/
@@ -30,35 +29,36 @@ export async function GET(
     })
   }
 
-  // if (process.env.NEXT_PUBLIC_DEBUG) console.log('The match is :', data)
-
-  if (data && data.rounds) {
-    const rounds = data.rounds as Game[]
-    const currentRound = data.rounds.length - 1
-    const currentGame = rounds[currentRound]
-
-    let genres = []
-    if (currentGame.genres.length > 3) {
-      genres.push(...getRandomEntries(currentGame.genres))
-    } else {
-      genres.push(...currentGame.genres)
-    }
-
-    const publishers = currentGame.publishers as GamePublishers
-
-    const formatedGameToGuess = {
-      genre1: genres[0],
-      genre2: genres[1] || null,
-      genre3: genres[2] || null,
-      developer: currentGame?.developer,
-      publisher: publishers,
-      release_year: currentGame?.release_year
-    }
-    
+  if (data.rounds.length === 0) {
     return NextResponse.json({
       code: 200,
-      data: formatedGameToGuess,
-      body: { message: `Match creation process ended` }
+      body: { message: `Match creation process ended with no round` }
+    })
+  }
+
+  const { data: currentRound, error: errorCurrentRound } = await supabase
+    .from('rounds')
+    .select('hints_game, end_time')
+    .eq('match_id', params.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (errorCurrentRound) {
+    return NextResponse.json({
+      code: 500,
+      error,
+      body: { message: `Error while requesting current match rounds` }
+    })
+  }
+
+  // if (process.env.NEXT_PUBLIC_DEBUG) console.log('The match is :', data)
+
+  if (data && currentRound) {
+    return NextResponse.json({
+      code: 200,
+      data: currentRound,
+      body: { message: `Match creation process ended with rounds` }
     })
   }
 }

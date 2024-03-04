@@ -18,6 +18,16 @@ export async function POST(
   const supabase = await createGamemasterClient()
   console.log(`Requesting delete of match ${params.id}`)
 
+  const { error: roundsError } = await supabase
+    .from('rounds')
+    .delete()
+    .eq('match_id', params.id)
+
+  if (roundsError) return NextResponse.json({
+    code: 500,
+    body: { message: `Error while deleting rounds of match ${params.id}` }
+  })
+
   const { error } = await supabase
     .from('matches')
     .delete()
@@ -25,9 +35,10 @@ export async function POST(
 
   if (error) return NextResponse.json({
     code: 500,
-    body: { message: `Error while deleting match` }
+    body: { message: `Error while deleting match ${params.id}` }
   })
 
+  console.log(`Match ${params.id} deleted with success`)
   return NextResponse.json({
     code: 200,
     body: { message: `Match deletion process ended` }

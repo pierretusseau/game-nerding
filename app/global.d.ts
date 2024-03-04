@@ -9,6 +9,7 @@ declare global {
   type Platform = DB['public']['Tables']['platforms']['Row']
   // type GameGenres = DB['public']['Tables']['app_games']['Row']['genres']
   type Match = DB['public']['Tables']['matches']['Row']
+  type Round = DB['public']['Tables']['round']['Row']
   type GameGenre = Json
   type GameDeveloper = Json
   type GamePublisher = Json
@@ -23,5 +24,8 @@ declare global {
     developer: number,
     publisher: number[],
     release_year: number,
+  }
+  type MatchRules = {
+    timer: number
   }
 }

@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import createGamemasterClient from '@/lib/supabase-gamemaster'
 import { formatSupabaseDateTime, getRandomEntries } from '@/Utils/Utils'
 
+let matchRequested = [] as string[]
+
 // Create a new match
 /*----------------------------------------------------*/
 export async function GET(
@@ -13,90 +15,152 @@ export async function GET(
   console.log('Requesting next round')
   const supabase = await createGamemasterClient()
   const id = params.id
-  let matchEndingTime
 
-  // Update Reserve option
-  const { data, error } = await supabase
+  // Get match informations
+  const { data: match, error: errorMatch } = await supabase
     .from('matches')
-    .select('player_host, rounds')
+    .select('rounds, rules')
     .eq('id', id)
     .single()
 
-  if (error) return NextResponse.json({
+  if (errorMatch) return NextResponse.json({
     code: 500,
-    error,
+    error: errorMatch,
     body: { message: `Error while requesting current match` }
   })
 
-  let newRound
-  if (data && data.rounds) {
-    const { data: randomGame, error: randomGameError } = await supabase.rpc('choose_random_game')
-    
-    if (!randomGame || randomGameError) return NextResponse.json({
+  if (!match|| !match.rounds || !match.rules) return NextResponse.json({
+    code: 500,
+    match: match,
+    body: { message: `Error in match data` }
+  })
+
+  // Don't ask twice for the same match
+  if (matchRequested.some(match => match === params.id)) {
+    return NextResponse.json({
       code: 500,
-      error,
-      body: { message: `Error while requesting a new random game` }
+      body: { message: `Match already requested` }
     })
+  } else {
+    matchRequested.push(id)
+  }
 
-    const now = new Date()
-    matchEndingTime = new Date(now)
-      .setSeconds(now.getSeconds() + 30)
+  // Construct a new match data
+  const thisMatch = {
+    ...match,
+    rules: match.rules as MatchRules
+  }
+
+  // Get rounds details for this match
+  const { data: pastRounds, error: errorPastRounds } = await supabase
+    .from('rounds')
+    .select('full_game')
+    .eq('match_id', params.id)
+  
+  if (errorPastRounds) return NextResponse.json({
+    code: 500,
+    match: match,
+    body: { message: `Error in match data` }
+  })
+
+  // Get game at random
+  const {
+    data: game,
+    error: gameError
+  } = await supabase.rpc( 'choose_random_game', {
+    excludes: pastRounds.length > 0
+      ? pastRounds.map((round: Round) => round.full_game.id)
+      : [0] // Work around there's no ID 0 game
+  })
+  
+  console.log('random game:', game)
+
+  if (gameError) return NextResponse.json({
+    code: 500,
+    error: gameError,
+    body: { message: `Error while requesting a new random game` }
+  })
+
+  // Start creating round
+  let newRound
+  let roundEndingTime
+  let genres = []
+
+  const randomGame = game[0]
+
+  // Get end time for round
+  const now = new Date()
+  roundEndingTime = new Date(now)
+    .setSeconds(now.getSeconds() + thisMatch.rules.timer)
+  
     
-    console.log('New random game is', randomGame)
+  // Create formated hints
+  if (randomGame.genres.length > 3) {
+    genres.push(...getRandomEntries(randomGame.genres))
+  } else {
+    genres.push(...randomGame.genres)
+  }
 
-    const { data: newRoundData, error: newRoundError } = await supabase
+  const hints = {
+    genre1: genres[0] as number,
+    genre2: genres[1] || null as number|null,
+    genre3: genres[2] || null as number|null,
+    developer: randomGame.developer,
+    publisher: randomGame.publishers,
+    release_year: randomGame.release_year
+  }
+  
+  newRound = {
+    match_id: params.id,
+    full_game: randomGame,
+    end_time: formatSupabaseDateTime(roundEndingTime),
+    hints_game: hints as GameHints,
+    round_number: pastRounds.length
+  } as Round
+
+  const { data: newRoundData, error: newRoundError } = await supabase
+    .from('rounds')
+    .insert(newRound)
+    .select()
+    .single()
+
+  if (newRoundError) return NextResponse.json({
+    code: 500,
+    error: newRoundError,
+    body: { message: `Error while creating the new round` }
+  })
+
+  if (newRoundData) {
+    const { data: updatedMatch, error: errorUpdatedMatch } = await supabase
       .from('matches')
       .update({
         rounds: [
-          ...data.rounds,
-          randomGame[0]
-        ],
-        round_end: formatSupabaseDateTime(matchEndingTime)
+          ...match.rounds,
+          newRoundData.id
+        ]
       })
-      .eq('id', id)
-      .select('rounds, round_end')
-      .single()
-    
-      if (!newRoundData || newRoundError) return NextResponse.json({
-        code: 500,
-        error,
-        body: { message: `Error while creating a new round` }
-      })
-      newRound = newRoundData
-  }
-
-  if (newRound && newRound.rounds) {
-    const rounds = newRound.rounds as Game[]
-    const currentRound = newRound.rounds.length - 1
-    const currentGame = rounds[currentRound]
-
-    let genres = []
-    if (currentGame.genres.length > 3) {
-      genres.push(...getRandomEntries(currentGame.genres))
-    } else {
-      genres.push(...currentGame.genres)
-    }
-
-    const publishers = currentGame.publishers as GamePublishers
-
-    const formatedGameToGuess = {
-      genre1: genres[0],
-      genre2: genres[1] || null,
-      genre3: genres[2] || null,
-      developer: currentGame?.developer,
-      publisher: publishers,
-      release_year: currentGame?.release_year
-    }
-
-    console.log(newRound.round_end)
-    
+      .eq('id', params.id)
+  
+    if (errorUpdatedMatch) return NextResponse.json({
+      code: 500,
+      error: errorUpdatedMatch,
+      body: { message: `Error while updating the current match with new round` }
+    })
+  
+    matchRequested = matchRequested.filter(match => match !== params.id)
     return NextResponse.json({
       code: 200,
       data: {
-        gameToGuess: formatedGameToGuess,
-        roundEndingTime: matchEndingTime
+        hints_game: hints,
+        end_time: formatSupabaseDateTime(roundEndingTime),
+        round_number: pastRounds.length
       },
       body: { message: `Match creation process ended` }
     })
   }
+
+  return NextResponse.json({
+    code: 500,
+    body: { message: `Match creation process ended with an error` }
+  })
 }

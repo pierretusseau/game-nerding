@@ -1,6 +1,7 @@
 import { create } from "zustand"
 
 const defaultValues = {
+  matchRules: null as null | MatchRules,
   matchID: null as null | number,
   matchStarted: false,
   playerSelectedGame: null as null | Game,
@@ -8,7 +9,9 @@ const defaultValues = {
   answerLoading: false,
   answer: null as null | Game,
   gameToGuessGenres: [] as GameGenre[],
-  timer: undefined as undefined | number,
+  roundStarted: false,
+  roundFinished: false,
+  timer: null as null | number,
 }
 
 const useMatchStore = create(() => ({
@@ -20,14 +23,26 @@ export const fullGameReset = () => {
   useMatchStore.setState(defaultValues)
 }
 
+// Match rules
+export const setMatchRules = (rules: MatchRules = {
+  timer: 30
+}) => {
+  useMatchStore.setState({
+    matchRules: rules
+  })
+}
+
 // Round
 export const setMatch = (matchID: number) => {
   useMatchStore.setState({ matchID: matchID })
 }
-export const startGame = (hints: GameHints) => {
+export const startRound = (hints: GameHints, roundEndingTime: number) => {
+  const now = new Date().getTime()
+  const timer = roundEndingTime - now
+  
   useMatchStore.setState({
     gameToGuess: hints,
-    matchStarted: true
+    timer: Math.floor(timer / 1000)
   })
 }
 export const setGameToGuess = (hints: GameHints) => {
@@ -41,8 +56,15 @@ export const newRound = () => {
     gameToGuess: defaultValues.gameToGuess,
     answerLoading: defaultValues.answerLoading,
     answer: defaultValues.answer,
+    roundFinished: defaultValues.roundFinished,
     timer: defaultValues.timer,
   })
+}
+export const setRoundStarted = (bool: boolean = true) => {
+  useMatchStore.setState({ roundStarted: bool })
+}
+export const setRoundFinished = (bool: boolean = true) => {
+  useMatchStore.setState({ roundFinished: bool })
 }
 
 // Player Selected Game

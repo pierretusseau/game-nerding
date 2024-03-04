@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useContext, useEffect, useState } from 'react'
-import useMatchStore, { setGameToGuess, setTimer, setAnswer, setAnswerLoading, newRound } from '@/store/useMatchStore'
+import useMatchStore, { newRound, startRound, setRoundStarted } from '@/store/useMatchStore'
 import { resetSearch } from '@/store/usePlayerStore'
 
 type GuessBlockHeaderProps = {
@@ -15,6 +15,7 @@ function GuessBlockHeader({ matchID, remainingTime }: GuessBlockHeaderProps) {
   const handleNextRound = () => {
     newRound()
     resetSearch()
+
     const requestingTimer = async () => {
       await fetch(`${window.location.origin}/api/match/${matchID}/next`, {
         method: "GET",
@@ -25,9 +26,8 @@ function GuessBlockHeader({ matchID, remainingTime }: GuessBlockHeaderProps) {
         .then(res => res.json())
         .then(({code, error, data}) => {
           if (code === 200) {
-            const now = Math.floor(new Date().getTime() / 1000)
-            setGameToGuess(data.gameToGuess)
-            setTimer(Math.floor(data.roundEndingTime / 1000) - now)
+            startRound(data.hints_game, new Date(data.end_time).getTime())
+            setRoundStarted()
           }
           if (error) {
             console.log(error)

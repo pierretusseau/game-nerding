@@ -20,7 +20,7 @@ export type Database = {
           id: number
           name: string
           platforms: Json[]
-          publisher: number
+          publisher: number | null
           publishers: Json
           rating: number | null
           rating_count: number | null
@@ -38,7 +38,7 @@ export type Database = {
           id: number
           name: string
           platforms?: Json[]
-          publisher: number
+          publisher?: number | null
           publishers?: Json
           rating?: number | null
           rating_count?: number | null
@@ -56,7 +56,7 @@ export type Database = {
           id?: number
           name?: string
           platforms?: Json[]
-          publisher?: number
+          publisher?: number | null
           publishers?: Json
           rating?: number | null
           rating_count?: number | null
@@ -175,8 +175,8 @@ export type Database = {
           match_ended: boolean
           player_guest: Json | null
           player_host: Json
-          round_end: string | null
           rounds: Json[]
+          rules: Json
         }
         Insert: {
           created_at?: string
@@ -184,8 +184,8 @@ export type Database = {
           match_ended?: boolean
           player_guest?: Json | null
           player_host: Json
-          round_end?: string | null
-          rounds: Json[]
+          rounds?: Json[]
+          rules: Json
         }
         Update: {
           created_at?: string
@@ -193,8 +193,8 @@ export type Database = {
           match_ended?: boolean
           player_guest?: Json | null
           player_host?: Json
-          round_end?: string | null
           rounds?: Json[]
+          rules?: Json
         }
         Relationships: []
       }
@@ -224,6 +224,47 @@ export type Database = {
           platform_logo?: number | null
         }
         Relationships: []
+      }
+      rounds: {
+        Row: {
+          created_at: string
+          end_time: string
+          full_game: Json
+          hints_game: Json
+          id: number
+          match_id: string
+          round_number: number
+          winner: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          full_game: Json
+          hints_game: Json
+          id?: number
+          match_id: string
+          round_number: number
+          winner?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          full_game?: Json
+          hints_game?: Json
+          id?: number
+          match_id?: string
+          round_number?: number
+          winner?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_rounds_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       users: {
         Row: {
@@ -260,7 +301,9 @@ export type Database = {
     }
     Functions: {
       choose_random_game: {
-        Args: Record<PropertyKey, never>
+        Args: {
+          excludes: number[]
+        }
         Returns: {
           category: number | null
           checksum: string
@@ -271,7 +314,7 @@ export type Database = {
           id: number
           name: string
           platforms: Json[]
-          publisher: number
+          publisher: number | null
           publishers: Json
           rating: number | null
           rating_count: number | null
