@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import createGamemasterClient from '@/lib/supabase-gamemaster'
 import { formatSupabaseDateTime, getRandomEntries } from '@/Utils/Utils'
 
-export const dynamic = 'auto'
+export const dynamic = 'force-dynamic'
 
 let matchRequested = [] as string[]
 
