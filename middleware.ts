@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
  
 const allowed_url = process.env.NEXT_PUBLIC_ENV === 'development'
-  ? 'https://localhost:3000'
+  ? 'http://localhost:3000'
   : process.env.NEXT_PUBLIC_URL
 const allowedOrigins = [allowed_url]
  
@@ -11,13 +11,11 @@ const corsOptions = {
 }
  
 export function middleware(request: NextRequest) {
-  console.log('origin', request.headers.get('origin'))
-  console.log('allowed origin', allowedOrigins)
   // Check the origin from the request
   const origin = request.headers.get('origin') ?? ''
   const isAllowedOrigin = allowedOrigins.includes(origin)
 
-  if (!isAllowedOrigin) return NextResponse.json({
+  if (!isAllowedOrigin && origin.length > 0) return NextResponse.json({
     error: 'Unauthorized request'
   }, {
     status: 403
