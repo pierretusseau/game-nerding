@@ -25,8 +25,9 @@ export default function Match({ params }: { params: { id: string } }) {
   const answer = useMatchStore((state) => state.answer) || null
   const roundStarted = useMatchStore((state) => state.roundStarted) || false
   const router = useRouter()
-
-  const handleFirstRound = async () => {
+  
+  const handleFirstRound = useCallback(async () => {
+    console.log('[API] Fetching first round')
     await fetch(`${window.location.origin}/api/match/${params.id}/next`, {
       method: "GET",
       headers: {
@@ -44,44 +45,71 @@ export default function Match({ params }: { params: { id: string } }) {
         }
       })
       .catch(err => console.error(err))
-  }
+  }, [params.id])
+  
+  const handleAnswer = useCallback(async () => {
+    console.log('[API] Fetching answer')
+    await fetch(`${window.location.origin}/api/match/${params.id}/answer`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+      .then(res => res.json())
+      .then(({code, error, data}) => {
+        console.log(code, error, data)
+        if (code === 200) {
+          setAnswer(data.game)
+          setAnswerLoading(false)
+        }
+        if (error) {
+          console.log(error)
+          setAnswerLoading(false)
+          throw new Error(error)
+        }
+      })
+      .catch(err => {
+        console.error(err)
+        setAnswerLoading(false)
+      })
+  }, [params.id])
+
+  const requestingGameData = useCallback(async () => {
+    await fetch(`${window.location.origin}/api/match/${params.id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    })
+      .then(res => res.json())
+      .then(({code, error, data}) => {
+        if (code === 200) {
+          if (!data) {
+            handleFirstRound()
+          } else {
+            startRound(data.hints_game, new Date(data.end_time).getTime())
+            setRoundStarted()
+          }
+        }
+        if (error) {
+          if (error.code === 'PGRST116') {
+            // Match not found
+            setMatchNotFound(true)
+          } else {
+            throw new Error(error)
+          }
+        }
+      })
+      .catch(err => console.error(err))
+  }, [params.id, handleFirstRound])
 
   // Start the match
   /*----------------------------------------------------*/
   useEffect(() => {
     if (gamesLoading || companiesLoading || genresLoading) return
 
-    const requestingGameData = async () => {
-      await fetch(`${window.location.origin}/api/match/${params.id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      })
-        .then(res => res.json())
-        .then(({code, error, data}) => {
-          if (code === 200) {
-            if (!data) {
-              handleFirstRound()
-            } else {
-              startRound(data.hints_game, new Date(data.end_time).getTime())
-              setRoundStarted()
-            }
-          }
-          if (error) {
-            if (error.code === 'PGRST116') {
-              // Match not found
-              setMatchNotFound(true)
-            } else {
-              throw new Error(error)
-            }
-          }
-        })
-        .catch(err => console.error(err))
-    }
-
     requestingGameData()
-  }, [gamesLoading, companiesLoading, genresLoading, router, params.id])
+  }, [requestingGameData, gamesLoading, companiesLoading, genresLoading])
   
   // Start timer ticker
   /*----------------------------------------------------*/
@@ -111,36 +139,8 @@ export default function Match({ params }: { params: { id: string } }) {
     setRoundFinished()
     setAnswerLoading(true)
 
-    console.log('fetching answer')
-
-    const requestingAnswer = async () => {
-      await fetch(`${window.location.origin}/api/match/${params.id}/answer`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      })
-        .then(res => res.json())
-        .then(({code, error, data}) => {
-          console.log(code, error, data)
-          if (code === 200) {
-            setAnswer(data.game)
-            setAnswerLoading(false)
-          }
-          if (error) {
-            console.log(error)
-            setAnswerLoading(false)
-            throw new Error(error)
-          }
-        })
-        .catch(err => {
-          console.error(err)
-          setAnswerLoading(false)
-        })
-    }
-
-    requestingAnswer()
-  }, [remainingTime])
+    handleAnswer()
+  }, [remainingTime, handleAnswer])
   
   // Render
   if (gamesLoading || companiesLoading || genresLoading) {

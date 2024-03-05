@@ -12,7 +12,7 @@ export default function Home() {
   const [matchHistory, setMatchHistory] = useState<Match[]|undefined>()
   const [matchCreating, setMatchCreating] = useState<boolean>(false)
 
-  const handleMatchHistory = async (player: string) => {
+  const handleMatchHistory = useCallback(async (player: string) => {
     await fetch(`${window.location.origin}/api/match/history/${player}`, {
       method: "GET",
       headers: {
@@ -21,7 +21,6 @@ export default function Home() {
     })
       .then(res => res.json())
       .then(({code, error, data}) => {
-        console.log(code, data)
         if (code === 200) {
           setMatchHistory(data)
         }
@@ -31,7 +30,7 @@ export default function Home() {
         }
       })
       .catch(err => console.error(err))
-  }
+  }, [])
 
   const handleMatchDeletion = async (matchID: string) => {
     await fetch(`${window.location.origin}/api/match/${matchID}/delete`, {
@@ -59,7 +58,7 @@ export default function Home() {
   useEffect(() => {
     if (matchHistory !== undefined || user === undefined) return
     handleMatchHistory(user.name)
-  }, [user])
+  }, [user, handleMatchHistory, matchHistory])
 
   // Render
   if (userLoading || gamesLoading || companiesLoading || genresLoading) {
