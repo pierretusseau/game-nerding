@@ -4,11 +4,13 @@ const defaultValues = {
   matchRules: null as null | MatchRules,
   matchID: null as null | number,
   matchStarted: false,
+  matchFinished: false,
   playerSelectedGame: null as null | Game,
   gameToGuess: null as null | GameHints,
   answerLoading: false,
   answer: null as null | Game,
   gameToGuessGenres: [] as GameGenre[],
+  currentRound: 0,
   roundStarted: false,
   roundFinished: false,
   timer: null as null | number,
@@ -23,13 +25,17 @@ export const fullGameReset = () => {
   useMatchStore.setState(defaultValues)
 }
 
-// Match rules
+// Match
 export const setMatchRules = (rules: MatchRules = {
-  timer: 30
+  timer: 30,
+  numberOfRounds: 10
 }) => {
   useMatchStore.setState({
     matchRules: rules
   })
+}
+export const finishMatch = () => {
+  useMatchStore.setState({ matchFinished: true })
 }
 
 // Round
@@ -59,6 +65,9 @@ export const newRound = () => {
     roundFinished: defaultValues.roundFinished,
     timer: defaultValues.timer,
   })
+}
+export const setCurrentRound = (number: number) => {
+  useMatchStore.setState({ currentRound: number })
 }
 export const setRoundStarted = (bool: boolean = true) => {
   useMatchStore.setState({ roundStarted: bool })

@@ -74,21 +74,20 @@ export async function GET(
       ? pastRounds.map((round: Round) => round.full_game.id)
       : [0] // Work around there's no ID 0 game
   })
-  
-  console.log('random game:', game)
 
   if (gameError) return NextResponse.json({
     code: 500,
     error: gameError,
     body: { message: `Error while requesting a new random game` }
   })
+  
+  const randomGame = game[0]
+  console.log('random game is :', randomGame.name)
 
   // Start creating round
   let newRound
   let roundEndingTime
   let genres = []
-
-  const randomGame = game[0]
 
   // Get end time for round
   const now = new Date()

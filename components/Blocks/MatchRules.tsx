@@ -3,20 +3,26 @@ import { useRouter } from 'next/navigation'
 import { Context, TContext } from '@/app/context-provider'
 
 const defaultMatchRules = {
-  timer: 30
+  timer: 30,
+  numberOfRounds: 10
 }
 
 function MatchRules() {
   const { user } = useContext<TContext>(Context)
   const [matchRules, setMatchRules] = useState<MatchRules>(defaultMatchRules)
   const [rulesTimer, setRulesTimer] = useState<number>(defaultMatchRules.timer)
+  const [rulesNumberOfRounds, setRulesNumberOfRounds] = useState<number>(defaultMatchRules.numberOfRounds)
   const router = useRouter()
 
-  const handleRulesTimerChange = (timer: string) => {
+  const handleRulesTimerChange = useCallback((timer: string) => {
     setRulesTimer(Number(timer))
-  }
+  }, [])
 
-  const handleMatchCreation = async (userObject: User, matchRules: MatchRules) => {
+  const handleRulesNumberOfRoundsChange = useCallback((timer: string) => {
+    setRulesNumberOfRounds(Number(timer))
+  }, [])
+
+  const handleMatchCreation = useCallback(async (userObject: User, matchRules: MatchRules) => {
     await fetch(`${window.location.origin}/api/match`, {
       method: "POST",
       headers: {
@@ -38,28 +44,43 @@ function MatchRules() {
         }
       })
       .catch(err => console.error(err))
-  }
+  }, [router])
 
   useEffect(() => {
     setMatchRules({
-      ...matchRules,
-      timer: rulesTimer
+      timer: rulesTimer,
+      numberOfRounds: rulesNumberOfRounds
     })
-  }, [rulesTimer])
-  
+  }, [rulesTimer, rulesNumberOfRounds])
 
   return (
     <div>
       <div>Rules</div>
-      <div>
-        Timer: <input
-        type="text"
-        placeholder="Type here"
-        className="input w-full max-w-xs"
-        defaultValue={rulesTimer}
-        onChange={(e) => handleRulesTimerChange(e.target.value)}/>
-      </div>
-      <button className="btn" onClick={() => handleMatchCreation(user, matchRules)}>Start Match</button>
+      <label className="form-control w-full max-w-xs">
+        <div className="label">
+          <span className="label-text">Timer</span>
+        </div>
+        <input
+          type="text"
+          placeholder="30"
+          className="input w-full max-w-xs"
+          defaultValue={rulesTimer}
+          onChange={(e) => handleRulesTimerChange(e.target.value)}
+        />
+      </label>
+      <label className="form-control w-full max-w-xs">
+        <div className="label">
+          <span className="label-text">Number of rounds</span>
+        </div>
+        <input
+          type="text"
+          placeholder="Type here"
+          className="input w-full max-w-xs"
+          defaultValue={rulesNumberOfRounds}
+          onChange={(e) => handleRulesNumberOfRoundsChange(e.target.value)}
+        />
+      </label>
+      <button className="btn mt-4" onClick={() => handleMatchCreation(user, matchRules)}>Start Match</button>
     </div>
   )
 }

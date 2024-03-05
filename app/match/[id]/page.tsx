@@ -10,7 +10,10 @@ import useMatchStore, {
   setAnswer,
   setRoundStarted,
   setRoundFinished,
-  resetTimer
+  resetTimer,
+  setCurrentRound,
+  setMatchRules,
+  finishMatch
 } from '@/store/useMatchStore'
 import LoaderIntro from '@/components/Loaders/LoaderIntro'
 import GuessBlock from '@/components/Blocks/GuessBlock'
@@ -38,6 +41,7 @@ export default function Match({ params }: { params: { id: string } }) {
       .then(({code, error, data}) => {
         if (code === 200) {
           startRound(data.hints_game, new Date(data.end_time).getTime())
+          setCurrentRound(data.round_number + 1)
           setRoundStarted()
         }
         if (error) {
@@ -57,10 +61,10 @@ export default function Match({ params }: { params: { id: string } }) {
     })
       .then(res => res.json())
       .then(({code, error, data}) => {
-        console.log(code, error, data)
         if (code === 200) {
           setAnswer(data.game)
           setAnswerLoading(false)
+          if (data.matchFinished) finishMatch()
         }
         if (error) {
           console.log(error)
@@ -84,10 +88,14 @@ export default function Match({ params }: { params: { id: string } }) {
       .then(res => res.json())
       .then(({code, error, data}) => {
         if (code === 200) {
-          if (!data) {
+          setMatchRules(data.rules)
+          const rounds = data.rounds
+          if (rounds.length === 0) {
             handleFirstRound()
           } else {
-            startRound(data.hints_game, new Date(data.end_time).getTime())
+            const lastRoundAvaible = rounds[0]
+            startRound(lastRoundAvaible.hints_game, new Date(lastRoundAvaible.end_time).getTime())
+            setCurrentRound(rounds.length)
             setRoundStarted()
           }
         }

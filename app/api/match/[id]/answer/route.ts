@@ -16,7 +16,7 @@ export async function POST(
 
   const { data, error } = await supabase
     .from('matches')
-    .select('rounds')
+    .select('rounds, rules')
     .eq('id', params.id)
     .single()
 
@@ -53,12 +53,15 @@ export async function POST(
     })
   }
 
-  console.log('Answer should be :', roundData.full_game)
+  const gameAnswer = roundData.full_game as Game
+  const matchRules = data.rules as MatchRules
+  console.log('Answer should be :', gameAnswer.name)
 
   return NextResponse.json({
     code: 200,
     data: {
-      game: roundData.full_game as Game
+      game: gameAnswer,
+      matchFinished: matchRules.numberOfRounds === data.rounds.length
     },
     body: { message: `Match creation process ended` }
   })

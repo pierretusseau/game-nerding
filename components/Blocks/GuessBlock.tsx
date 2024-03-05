@@ -1,6 +1,5 @@
-import React, { useCallback, useMemo, useContext, useEffect, useState } from 'react'
-import { Context, TContext } from '@/app/context-provider'
-import useMatchStore, { setGameToGuess, setTimer, setAnswer, setAnswerLoading, newRound } from '@/store/useMatchStore'
+import React from 'react'
+import useMatchStore from '@/store/useMatchStore'
 import Hints from '@/components/Blocks/Hints'
 import GuessBlockHeader from './GuessBlockHeader'
 
@@ -10,10 +9,8 @@ type GuessBlockProps = {
 }
 
 function GuessBlock({ matchID, remainingTime }: GuessBlockProps) {
-  const { companies } = useContext<TContext>(Context)
   const gameToGuess = useMatchStore((state) => state.gameToGuess)
 
-  if (!companies) return
   return (
     <>
       <GuessBlockHeader matchID={matchID} remainingTime={remainingTime} />

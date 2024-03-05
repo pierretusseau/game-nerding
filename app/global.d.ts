@@ -26,6 +26,7 @@ declare global {
     release_year: number,
   }
   type MatchRules = {
-    timer: number
+    timer: number,
+    numberOfRounds: number,
   }
 }
