@@ -3,6 +3,8 @@ import 'server-only'
 import { NextRequest, NextResponse } from 'next/server'
 import createGamemasterClient from '@/lib/supabase-gamemaster'
 
+export const dynamic = 'force-dynamic'
+
 // Create a new match
 /*----------------------------------------------------*/
 export async function POST(req: NextRequest) {
