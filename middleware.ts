@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
  
 const allowed_url = process.env.NEXT_PUBLIC_ENV === 'development'
   ? 'http://localhost:3000'
-  : `https://${process.env.NEXT_PUBLIC_URL}`
+  : `https://${process.env.NEXT_PUBLIC_URL || process.env.VERCEL_URL}`
 const allowedOrigins = [allowed_url]
  
 const corsOptions = {
