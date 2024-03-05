@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
- 
-const allowed_url = process.env.NEXT_PUBLIC_ENV === 'development'
-  ? 'http://localhost:3000'
-  : `https://${process.env.NEXT_PUBLIC_URL || process.env.VERCEL_URL}`
-const allowedOrigins = [allowed_url]
- 
+
+const allowedOrigins = [] as string[]
+
+if (process.env.NEXT_PUBLIC_ENV === 'development') allowedOrigins.push('http://localhost:3000')
+if (process.env.NEXT_PUBLIC_URL) allowedOrigins.push(process.env.NEXT_PUBLIC_URL)
+if (process.env.VERCEL_URL) allowedOrigins.push(process.env.VERCEL_URL)
+if (process.env.VERCEL_BRANCH_URL) allowedOrigins.push(process.env.VERCEL_BRANCH_URL)
+
 const corsOptions = {
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
