@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useContext, useEffect, useState } from 'react'
+import React, { useContext, memo } from 'react'
 import { Context, TContext } from '@/app/context-provider'
 import Hint from '@/components/Atoms/Hint'
 
@@ -6,7 +6,7 @@ type HintsProps = {
   game: GameHints
 }
 
-function Hints({ game }: HintsProps) {
+const HintsMemo = memo(function Hints({ game }: HintsProps) {
   const { companies, genres } = useContext<TContext>(Context)
   
   if (!companies || !genres) return
@@ -33,6 +33,6 @@ function Hints({ game }: HintsProps) {
       <Hint type="year" content={game.release_year.toString()} />
     </div>
   )
-}
+})
 
-export default Hints
+export default HintsMemo
